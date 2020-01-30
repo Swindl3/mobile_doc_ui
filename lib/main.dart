@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_doc/register.dart';
 import 'package:mobile_doc/home.dart';
-
-
+import 'package:http/http.dart' as http;
+import 'config.dart';
+import 'dart:convert';
 void main() {
   runApp(MaterialApp(
     home: DocApp(),
@@ -18,10 +19,28 @@ class DocApp extends StatefulWidget {
 }
 
 class _DocApp extends State {
+
+  TextEditingController _userName = TextEditingController();
+  TextEditingController _passWord = TextEditingController();
   int get userId => null;
 
-  void click() {
-    print("click");
+  void onLogin() {
+     Map<String, String> params = Map();
+      params['user_username'] = _userName.text.trim();
+      params['user_password'] = _passWord.text.trim();
+      http
+      .post('${Config.api_url}/api/login', body: params)
+      .then((response){
+        Map resMap = jsonDecode(response.body) as Map;
+        bool status = resMap['success'];
+        if(status == true) {
+          print("Login Succeeded");
+           Navigator.of(context).push(
+                  MaterialPageRoute(builder: (BuildContext) => HomeScreen()));
+        }else{
+          print("Login Failed");
+        }
+      });
   }
 
   @override
@@ -44,6 +63,7 @@ class _DocApp extends State {
           child: TextField(
             decoration: InputDecoration(
                 hintText: "Username", contentPadding: EdgeInsets.all(10.0)),
+                controller: _userName,
           ),
         ),
         Container(
@@ -51,15 +71,13 @@ class _DocApp extends State {
           child: TextField(
             decoration: InputDecoration(
                 hintText: "Password", contentPadding: EdgeInsets.all(10.0)),
+                controller: _passWord
           ),
         ),
         Container(
           margin: EdgeInsets.only(left: 60.0, right: 60.0, top: 30.0),
           child: RaisedButton(
-            onPressed: () => {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (BuildContext) => HomeScreen()))
-            },
+            onPressed: onLogin,
             color: Colors.blue,
             padding: EdgeInsets.all(15.0),
             child: Text(
