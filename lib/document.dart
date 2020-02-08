@@ -171,7 +171,9 @@ class _DocumentScreen extends State {
           trailing: Icon(Icons.arrow_drop_down),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext) => DetailDocumentScreen()));
+                builder: (BuildContext) => DetailDocumentScreen(
+                  imgPath: "${_notesForDisplay[index].docPicture}",
+                )));
           },
           onLongPress: () {
             _askedToLead();
@@ -188,10 +190,11 @@ class _DocumentScreen extends State {
 
 class Note {
   String docName;
-
+  String docPicture;
   Note(this.docName);
   // Note(this.groupId);
   Note.fromJson(Map<String, dynamic> json) {
     docName = json['doc_name'];
+    docPicture = json['doc_picture'];
   }
 }

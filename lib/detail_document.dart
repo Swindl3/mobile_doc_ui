@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_doc/edit_document.dart';
-
 import 'add_document.dart';
+import 'config.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -11,15 +11,19 @@ void main() {
 }
 
 class DetailDocumentScreen extends StatefulWidget {
+  final String imgPath;
+  DetailDocumentScreen({Key key, this.imgPath}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _DetailDocumentScreen();
+    return _DetailDocumentScreen(this.imgPath);
   }
 }
 
 class _DetailDocumentScreen extends State {
+  String imgPath;
+  _DetailDocumentScreen(this.imgPath);
   void click() {
-    print("click");
+    print(imgPath);
   }
 
   @override
@@ -62,7 +66,7 @@ class _DetailDocumentScreen extends State {
                         heroTag: "btn_download",
                         icon: Icon(Icons.file_download),
                         backgroundColor: Colors.blue,
-                        onPressed: () {},
+                        onPressed: click,
                       ),
                     ],
                   ),
@@ -86,13 +90,15 @@ class _DetailDocumentScreen extends State {
               icon: Icon(Icons.edit),
               backgroundColor: Colors.blue,
               onPressed: () => {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (BuildContext) => EditDocumentScreen()))
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext) => EditDocumentScreen()))
               },
             ),
           ),
           Container(
-            child: Image.asset("images/logo.png"),
+            child: imgPath == null
+                ? Image.asset("images/document.png")
+                : Image.network("${Config.api_url}/" + imgPath),
             margin: EdgeInsets.all(30.0),
             height: 300.0,
             width: 300.0,

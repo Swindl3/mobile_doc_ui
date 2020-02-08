@@ -13,8 +13,6 @@ void main() {
 }
 
 class AddGroupScreen extends StatefulWidget {
- 
- 
   @override
   State<StatefulWidget> createState() {
     return _AddGroupScreen();
@@ -24,24 +22,28 @@ class AddGroupScreen extends StatefulWidget {
 class _AddGroupScreen extends State {
   TextEditingController _name = TextEditingController();
   TextEditingController _detail = TextEditingController();
+  bool _validate = false;
   void confirmAddgroup() {
-        Map<String, dynamic> param = Map();
+    Map<String, dynamic> param = Map();
     param['group_name'] = _name.text;
     param['group_description'] = _detail.text;
-
-    http.post("${Config.api_url}/api/addgroup", body: param).then((response) {
-      print(response.body);
-      Map resMap = jsonDecode(response.body) as Map;
-      String status = resMap['status'];
-      if (status == "success") {
-        setState(() {
-          _showDialogSuccess();
-        });
-      } else {
-
-      }
-    });
+    if (_name.text == "" || _detail.text == "") {
+      _validate = true;
+    } else {
+      _validate = false;
+      http.post("${Config.api_url}/api/addgroup", body: param).then((response) {
+        print(response.body);
+        Map resMap = jsonDecode(response.body) as Map;
+        String status = resMap['status'];
+        if (status == "success") {
+          setState(() {
+            _showDialogSuccess();
+          });
+        } else {}
+      });
+    }
   }
+
   void _showDialogSuccess() {
     // flutter defined function
     showDialog(
@@ -65,6 +67,7 @@ class _AddGroupScreen extends State {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,8 +80,9 @@ class _AddGroupScreen extends State {
             margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
             child: TextField(
               decoration: InputDecoration(
-                  hintText: "ชื่อกลุ่ม", contentPadding: EdgeInsets.all(10.0)),
-                  controller: _name,
+                  hintText: "ชื่อกลุ่ม", contentPadding: EdgeInsets.all(10.0),
+                  errorText:_validate ? "${Config.err_empty_str}" : null),
+              controller: _name,
             ),
           ),
           Container(
@@ -86,12 +90,12 @@ class _AddGroupScreen extends State {
             child: TextField(
               decoration: InputDecoration(
                   hintText: "รายละเอียดกลุ่ม",
-                  contentPadding: EdgeInsets.all(10.0)),
-                  controller: _detail,
+                  contentPadding: EdgeInsets.all(10.0),
+                  errorText: _validate ? "${Config.err_empty_str}" : null),
+              controller: _detail,
             ),
           ),
           Container(
-          
             margin: EdgeInsets.only(left: 60.0, right: 60.0, top: 30.0),
             child: RaisedButton(
               onPressed: confirmAddgroup,
@@ -100,7 +104,6 @@ class _AddGroupScreen extends State {
               child: Text(
                 'ยืนยัน',
                 style: TextStyle(color: Colors.white),
-                
               ),
             ),
           )

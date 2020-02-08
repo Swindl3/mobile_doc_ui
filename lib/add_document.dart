@@ -15,7 +15,7 @@ void main() {
 }
 
 class AddDocumentScreen extends StatefulWidget {
-  final String groupId ;
+  final String groupId;
   AddDocumentScreen({Key key, this.groupId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
@@ -26,28 +26,50 @@ class AddDocumentScreen extends StatefulWidget {
 class _AddDocumentScreen extends State {
   String groupId;
   _AddDocumentScreen(this.groupId);
- 
+
   TextEditingController _name = TextEditingController();
   TextEditingController _detail = TextEditingController();
-    void confirmAddDoc() {
-        Map<String, dynamic> param = Map();
+
+  bool _validate = false;
+  File _image;
+  String txtImage;
+  void confirmAddDoc() {
+    if (_image != null) {
+     List<int> imageStr = _image.readAsBytesSync();
+
+      String base64 = base64Encode(imageStr);
+      List<int> encode = utf8.encode(base64);
+      String decode = utf8.decode(encode);
+      txtImage = decode;
+      print(txtImage);
+    }
+
+    Map<String, dynamic> param = Map();
     param['group_id'] = "${this.groupId}";
     param['doc_name'] = _name.text;
     param['doc_description'] = _detail.text;
+    param['doc_picture'] = txtImage;
 
-    http.post("${Config.api_url}/api/adddoc", body: param).then((response) {
-      print(response.body);
-      Map resMap = jsonDecode(response.body) as Map;
-      String status = resMap['status'];
-      if (status == "success") {
-        setState(() {
-          _showDialogSuccess();
-        });
-      } else {
-
-      }
-    });
+    if (_name.text == "" || _detail.text == "" || txtImage == "") {
+      _validate = true;
+      print(
+          "ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+      setState(() {});
+    } else {
+      _validate = false;
+      http.post("${Config.api_url}/api/adddoc", body: param).then((response) {
+        print(response.body);
+        Map resMap = jsonDecode(response.body) as Map;
+        String status = resMap['status'];
+        if (status == "success") {
+          setState(() {
+            _showDialogSuccess();
+          });
+        } else {}
+      });
+    }
   }
+
   void _showDialogSuccess() {
     // flutter defined function
     showDialog(
@@ -63,9 +85,9 @@ class _AddDocumentScreen extends State {
               child: new Text("ตกลง"),
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext) => DocumentScreen(
-                        groupId: "${this.groupId}",
-                      )));
+                    builder: (BuildContext) => DocumentScreen(
+                          groupId: "${this.groupId}",
+                        )));
               },
             ),
           ],
@@ -73,6 +95,7 @@ class _AddDocumentScreen extends State {
       },
     );
   }
+
   Future<void> _askedToLead() async {
     switch (await showDialog<Document>(
         context: context,
@@ -93,8 +116,6 @@ class _AddDocumentScreen extends State {
         })) {
     }
   }
-
-  File _image;
 
   Future getImage() async {
     await Navigator.of(context).pop();
@@ -121,24 +142,27 @@ class _AddDocumentScreen extends State {
           title: Text("หน้าเพิ่มเอกสาร"),
         ),
         body: ListView(
-           
           children: <Widget>[
             Container(
               margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
               child: TextField(
                 decoration: InputDecoration(
-                    hintText: "ชื่อเอกสาร",
-                    contentPadding: EdgeInsets.all(10.0)),
-                    controller: _name,
+                  hintText: "ชื่อเอกสาร",
+                  contentPadding: EdgeInsets.all(10.0),
+                  errorText: _validate ? "${Config.err_empty_str}" : null,
+                ),
+                controller: _name,
               ),
             ),
             Container(
               margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
               child: TextField(
                 decoration: InputDecoration(
-                    hintText: "รายละเอียดเอกสาร",
-                    contentPadding: EdgeInsets.all(10.0)),
-                    controller: _detail,
+                  hintText: "รายละเอียดเอกสาร",
+                  contentPadding: EdgeInsets.all(10.0),
+                  errorText: _validate ? "${Config.err_empty_str}" : null,
+                ),
+                controller: _detail,
               ),
             ),
             Container(
@@ -161,12 +185,11 @@ class _AddDocumentScreen extends State {
               margin: EdgeInsets.only(
                   left: 60.0, right: 60.0, top: 30.0, bottom: 30.0),
               child: RaisedButton(
-                onPressed:confirmAddDoc ,
+                onPressed: confirmAddDoc,
                 color: Colors.green,
                 padding: EdgeInsets.all(15.0),
                 child: Text(
                   'ยืนยัน',
-                  
                   style: TextStyle(color: Colors.white),
                 ),
               ),

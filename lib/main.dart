@@ -4,6 +4,7 @@ import 'package:mobile_doc/home.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 import 'dart:convert';
+
 void main() {
   runApp(MaterialApp(
     home: DocApp(),
@@ -19,28 +20,32 @@ class DocApp extends StatefulWidget {
 }
 
 class _DocApp extends State {
-
   TextEditingController _userName = TextEditingController();
   TextEditingController _passWord = TextEditingController();
+  bool _validate = false;
   int get userId => null;
 
   void onLogin() {
-     Map<String, String> params = Map();
-      params['user_username'] = _userName.text.trim();
-      params['user_password'] = _passWord.text.trim();
-      http
-      .post('${Config.api_url}/api/login', body: params)
-      .then((response){
+    Map<String, String> params = Map();
+    params['user_username'] = _userName.text.trim();
+    params['user_password'] = _passWord.text.trim();
+    if (_userName.text.trim() == "" || _passWord.text.trim() == "") {
+      _validate = true;
+      setState(() {});
+    } else {
+      _validate = false;
+      http.post('${Config.api_url}/api/login', body: params).then((response) {
         Map resMap = jsonDecode(response.body) as Map;
         bool status = resMap['success'];
-        if(status == true) {
+        if (status == true) {
           print("Login Succeeded");
-           Navigator.of(context).push(
-                  MaterialPageRoute(builder: (BuildContext) => HomeScreen()));
-        }else{
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext) => HomeScreen()));
+        } else {
           print("Login Failed");
         }
       });
+    }
   }
 
   @override
@@ -62,17 +67,21 @@ class _DocApp extends State {
           margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
           child: TextField(
             decoration: InputDecoration(
-                hintText: "Username", contentPadding: EdgeInsets.all(10.0)),
-                controller: _userName,
+              hintText: "Username",
+              contentPadding: EdgeInsets.all(10.0),
+              errorText: _validate ? "${Config.err_empty_str}" : null,
+            ),
+            controller: _userName,
           ),
         ),
         Container(
           margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
           child: TextField(
-            decoration: InputDecoration(
-                hintText: "Password", contentPadding: EdgeInsets.all(10.0)),
-                controller: _passWord
-          ),
+              decoration: InputDecoration(
+                  hintText: "Password",
+                  contentPadding: EdgeInsets.all(10.0),
+                  errorText: _validate ? "${Config.err_empty_str}" : null),
+              controller: _passWord),
         ),
         Container(
           margin: EdgeInsets.only(left: 60.0, right: 60.0, top: 30.0),
@@ -95,9 +104,7 @@ class _DocApp extends State {
               },
               color: Colors.green,
               padding: EdgeInsets.all(15.0),
-              child: Text(
-                'Register', 
-                style: TextStyle(color: Colors.white)),
+              child: Text('Register', style: TextStyle(color: Colors.white)),
             ))
       ],
     ));
