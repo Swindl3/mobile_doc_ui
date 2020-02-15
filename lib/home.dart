@@ -232,7 +232,7 @@ class _HomeScreen extends State {
               fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Text("12-3343-44"),
+          subtitle: Text("${_notesForDisplay[index].groupDesc}"),
           trailing: Icon(Icons.arrow_drop_down),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
@@ -260,10 +260,12 @@ class Group {
 class Note {
   String groupName;
   String groupId;
+  String groupDesc;
   Note(this.groupName);
   // Note(this.groupId);
   Note.fromJson(Map<String, dynamic> json) {
     groupName = json['group_name'];
     groupId = json['group_id'].toString();
+    groupDesc = json['group_description'];
   }
 }

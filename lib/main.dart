@@ -4,7 +4,7 @@ import 'package:mobile_doc/home.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 import 'dart:convert';
-
+import 'home.dart';
 void main() {
   runApp(MaterialApp(
     home: DocApp(),
@@ -26,6 +26,7 @@ class _DocApp extends State {
   int get userId => null;
 
   void onLogin() {
+    print("onLogin");
     Map<String, String> params = Map();
     params['user_username'] = _userName.text.trim();
     params['user_password'] = _passWord.text.trim();
@@ -77,11 +78,13 @@ class _DocApp extends State {
         Container(
           margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
           child: TextField(
-              decoration: InputDecoration(
-                  hintText: "Password",
-                  contentPadding: EdgeInsets.all(10.0),
-                  errorText: _validate ? "${Config.err_empty_str}" : null),
-              controller: _passWord),
+            decoration: InputDecoration(
+                hintText: "Password",
+                contentPadding: EdgeInsets.all(10.0),
+                errorText: _validate ? "${Config.err_empty_str}" : null),
+            controller: _passWord,
+            obscureText: true,
+          ),
         ),
         Container(
           margin: EdgeInsets.only(left: 60.0, right: 60.0, top: 30.0),

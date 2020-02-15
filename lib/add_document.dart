@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_doc/document.dart';
-
+import 'package:image_cropper/image_cropper.dart';
 import 'config.dart';
 
 void main() {
@@ -35,7 +35,7 @@ class _AddDocumentScreen extends State {
   String txtImage;
   void confirmAddDoc() {
     if (_image != null) {
-     List<int> imageStr = _image.readAsBytesSync();
+      List<int> imageStr = _image.readAsBytesSync();
 
       String base64 = base64Encode(imageStr);
       List<int> encode = utf8.encode(base64);
@@ -96,7 +96,7 @@ class _AddDocumentScreen extends State {
     );
   }
 
-  Future<void> _askedToLead() async {
+  _askedToLead() async {
     switch (await showDialog<Document>(
         context: context,
         builder: (BuildContext context) {
@@ -104,11 +104,15 @@ class _AddDocumentScreen extends State {
             title: const Text('Select assignment'),
             children: <Widget>[
               SimpleDialogOption(
-                onPressed: getImage,
+                onPressed: () {
+                  getImage(ImageSource.camera);
+                },
                 child: const Text('Camera'),
               ),
               SimpleDialogOption(
-                onPressed: getImageGallery,
+                onPressed: () {
+                  getImageGallery(ImageSource.gallery);
+                },
                 child: const Text('Gallery'),
               ),
             ],
@@ -117,22 +121,64 @@ class _AddDocumentScreen extends State {
     }
   }
 
-  Future getImage() async {
-    await Navigator.of(context).pop();
-    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+  getImage(ImageSource source) async {
+    // await Navigator.of(context).pop();
+    File image = await ImagePicker.pickImage(source: source);
+    if(image != null) {
+      File cropped = await ImageCropper.cropImage(
+            sourcePath: image.path,
+            aspectRatio: CropAspectRatio(
+                ratioX: 1, ratioY: 1),
+            compressQuality: 100,
+            maxWidth: 700,
+            maxHeight: 700,
+            compressFormat: ImageCompressFormat.jpg,
+            androidUiSettings: AndroidUiSettings(
+              toolbarColor: Colors.deepOrange,
+              toolbarTitle: "RPS Cropper",
+              statusBarColor: Colors.deepOrange.shade900,
+              backgroundColor: Colors.white,
+            )
+        );
 
-    setState(() {
-      _image = image;
-    });
+        this.setState((){
+          _image = cropped;
+          
+        });
+    }
+    // setState(() {
+    //   _image = image;
+    // });
   }
 
-  Future getImageGallery() async {
-    await Navigator.of(context).pop();
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+  getImageGallery(ImageSource source) async {
+    // await Navigator.of(context).pop();
+    File image = await ImagePicker.pickImage(source: source);
+     if(image != null) {
+      File cropped = await ImageCropper.cropImage(
+            sourcePath: image.path,
+            aspectRatio: CropAspectRatio(
+                ratioX: 1, ratioY: 1),
+            compressQuality: 100,
+            maxWidth: 700,
+            maxHeight: 700,
+            compressFormat: ImageCompressFormat.jpg,
+            androidUiSettings: AndroidUiSettings(
+              toolbarColor: Colors.deepOrange,
+              toolbarTitle: "RPS Cropper",
+              statusBarColor: Colors.deepOrange.shade900,
+              backgroundColor: Colors.white,
+            )
+        );
 
-    setState(() {
-      _image = image;
-    });
+        this.setState((){
+          _image = cropped;
+          
+        });
+    }
+    // setState(() {
+    //   _image = image;
+    // });
   }
 
   @override

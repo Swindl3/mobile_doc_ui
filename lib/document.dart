@@ -167,7 +167,7 @@ class _DocumentScreen extends State {
               fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Text("12-3343-44"),
+          subtitle: Text("${_notesForDisplay[index].docDesc}"),
           trailing: Icon(Icons.arrow_drop_down),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
@@ -191,10 +191,12 @@ class _DocumentScreen extends State {
 class Note {
   String docName;
   String docPicture;
+  String docDesc;
   Note(this.docName);
   // Note(this.groupId);
   Note.fromJson(Map<String, dynamic> json) {
     docName = json['doc_name'];
     docPicture = json['doc_picture'];
+    docDesc = json['doc_description'];
   }
 }
