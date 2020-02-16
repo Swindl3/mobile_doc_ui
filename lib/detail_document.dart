@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_doc/edit_document.dart';
@@ -14,6 +14,9 @@ import 'dart:io';
 // import 'package:image_downloader/image_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:flutter_share/flutter_share.dart';
+import 'package:image_picker_saver/image_picker_saver.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -37,11 +40,13 @@ class _DetailDocumentScreen extends State {
 
   downloadImg() async {
     print(imgPath);
-        var response = await Dio().get("${Config.img_url}/" + imgPath, options: Options(responseType: ResponseType.bytes));
-        print(response);
-    final result = await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
+    var response = await Dio().get("${Config.img_url}/" + imgPath,
+        options: Options(responseType: ResponseType.bytes));
+    print(response);
+    final result =
+        await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
     print(result);
-  
+
     // final Webclient http = new Webclient();
     // String url =
     //     "https://helpx.adobe.com/content/dam/help/en/stock/how-to/visual-reverse-image-search/jcr_content/main-pars/image/visual-reverse-image-search-v2_intro.jpg";
@@ -62,7 +67,29 @@ class _DetailDocumentScreen extends State {
     // }
   }
 
+  void _onImageShareButtonPressed() async {
+    print("${Config.img_url}/" + imgPath);
+    var response = await http.get("${Config.img_url}/" + imgPath);
+    var filePath =
+        await ImagePickerSaver.saveFile(fileData: response.bodyBytes);
+    print(filePath);
+
+    final ByteData bytes = await rootBundle.load(filePath);
+    Share.file(
+        'esys image', 'esys.png', bytes.buffer.asUint8List(), 'image/png').then((r){
+          print("Success");
+        });
+    // await EsysFlutterShare.shareImage('myImageTest.png', bytes, 'my image title');
+  }
+
   @override
+  void initState() {
+    super.initState();
+    PermissionHandler().requestPermissions(<PermissionGroup>[
+      PermissionGroup.storage,
+    ]);
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -113,7 +140,7 @@ class _DetailDocumentScreen extends State {
                         heroTag: "btn_share",
                         icon: Icon(Icons.share),
                         backgroundColor: Colors.blue,
-                        onPressed: () {},
+                        onPressed: _onImageShareButtonPressed,
                       ),
                     ],
                   )
