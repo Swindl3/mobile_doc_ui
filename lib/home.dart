@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'config.dart';
-import 'home.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -44,13 +43,11 @@ class _HomeScreen extends State {
         print(noteJson['group_id']);
         notes.add(Note.fromJson(noteJson));
       }
-      setState(() {
-        
-      });
+      setState(() {});
     }
     return notes;
   }
-  
+
   confirmDialogDel(String id) async {
     // flutter defined function
     await Navigator.of(context).pop();
@@ -88,14 +85,14 @@ class _HomeScreen extends State {
       if (status == true) {
         print("status == true");
         setState(() {
-          fetchNotes();
-          (context as Element).reassemble();
+          Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) => HomeScreen()));
         });
       } else {}
     });
   }
 
-  _askedToLead(String id) async {
+  _askedToLead(String id,String groupName, String groupDesc) async {
     print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
         "  " +
         id);
@@ -107,7 +104,7 @@ class _HomeScreen extends State {
             title: const Text('Select assignment'),
             children: <Widget>[
               SimpleDialogOption(
-                onPressed: getEditGruop,
+                onPressed: () => getEditGroup(groupName,groupDesc,id),
                 child: const Text('แก้ไข'),
               ),
               SimpleDialogOption(
@@ -131,10 +128,14 @@ class _HomeScreen extends State {
     super.initState();
   }
 
-  Future getEditGruop() async {
+  Future getEditGroup(String groupName , String groupDesc, String groupId) async {
     await Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditGroupScreen()));
+        builder: (BuildContext context) => EditGroupScreen(
+             groupName: groupName,
+          groupDesc:groupDesc ,
+          groupId: groupId,
+        )));
 
     setState(() {});
   }
@@ -233,6 +234,8 @@ class _HomeScreen extends State {
 
   _listItem(index) {
     String id = "${_notesForDisplay[index].groupId}";
+    String groupName = "${_notesForDisplay[index].groupName}";
+    String groupDesc = "${_notesForDisplay[index].groupDesc}";
     return new Column(
       children: <Widget>[
         ListTile(
@@ -253,7 +256,7 @@ class _HomeScreen extends State {
                     )));
           },
           onLongPress: () {
-            _askedToLead(id);
+            _askedToLead(id,groupName,groupDesc);
           },
         ),
         Divider(
