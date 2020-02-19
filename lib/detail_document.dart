@@ -5,18 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:mobile_doc/edit_document.dart';
 import 'add_document.dart';
 import 'config.dart';
-// import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:http/http.dart' as http;
-// import 'package:dio/dio.dart';
-// import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-// import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-// import 'package:image_downloader/image_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:flutter_share/flutter_share.dart';
-import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
+import 'package:flutter/foundation.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -46,40 +40,16 @@ class _DetailDocumentScreen extends State {
     final result =
         await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
     print(result);
-
-    // final Webclient http = new Webclient();
-    // String url =
-    //     "https://helpx.adobe.com/content/dam/help/en/stock/how-to/visual-reverse-image-search/jcr_content/main-pars/image/visual-reverse-image-search-v2_intro.jpg";
-    // Dio dio = Dio();
-    // print(imgPath);
-    // // "${Config.dowload_img}/" + imgPath
-    // try {
-    //   print("${Config.img_url}/" + imgPath);
-    //   // await ImageDownloader.downloadImage("${Config.img_url}/"+imgPath);
-    //   Directory dir = await getApplicationDocumentsDirectory();
-    //   print("${dir.path}/myimage.jpg");
-
-    //    Response<dynamic> a= await dio.download(url, dir.path+"/myimage.jpg");
-    //   //  print(a);
-    //   print("Download Successful");
-    // } catch (error) {
-    //   print(error);
-    // }
   }
 
   void _onImageShareButtonPressed() async {
     print("${Config.img_url}/" + imgPath);
-    var response = await http.get("${Config.img_url}/" + imgPath);
-    var filePath =
-        await ImagePickerSaver.saveFile(fileData: response.bodyBytes);
-    print(filePath);
 
-    final ByteData bytes = await rootBundle.load(filePath);
-    Share.file(
-        'esys image', 'esys.png', bytes.buffer.asUint8List(), 'image/png').then((r){
-          print("Success");
-        });
-    // await EsysFlutterShare.shareImage('myImageTest.png', bytes, 'my image title');
+    var request =
+        await HttpClient().getUrl(Uri.parse("${Config.img_url}/" + imgPath));
+    var response = await request.close();
+    Uint8List bytes = await consolidateHttpClientResponseBytes(response);
+    await Share.file('ESYS AMLOG', 'amlog.jpg', bytes, 'image/jpg');
   }
 
   @override

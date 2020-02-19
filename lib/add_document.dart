@@ -124,6 +124,7 @@ class _AddDocumentScreen extends State {
   getImage(ImageSource source) async {
     // await Navigator.of(context).pop();
     File image = await ImagePicker.pickImage(source: source);
+    print(image);
     if(image != null) {
       File cropped = await ImageCropper.cropImage(
             sourcePath: image.path,
@@ -146,9 +147,6 @@ class _AddDocumentScreen extends State {
           
         });
     }
-    // setState(() {
-    //   _image = image;
-    // });
   }
 
   getImageGallery(ImageSource source) async {

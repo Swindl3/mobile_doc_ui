@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'config.dart';
-import 'home.dart'; 
+import 'home.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -28,7 +28,6 @@ class _HomeScreen extends State {
 
   List<Note> _notes = List<Note>();
   List<Note> _notesForDisplay = List<Note>();
-
   Future<List<Note>> fetchNotes() async {
     var url = "${Config.api_url}/api/getgroup";
     var response = await http.get(url);
@@ -45,11 +44,16 @@ class _HomeScreen extends State {
         print(noteJson['group_id']);
         notes.add(Note.fromJson(noteJson));
       }
+      setState(() {
+        
+      });
     }
     return notes;
   }
-     showDialogSuccess(String id) {
+  
+  confirmDialogDel(String id) async {
     // flutter defined function
+    await Navigator.of(context).pop();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -59,36 +63,43 @@ class _HomeScreen extends State {
           content: new Text("แน่ใจที่จะลบ"),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
+            new FlatButton(child: new Text("ยกเลิก")),
             new FlatButton(
-              child: new Text("ยกเลิก")
+              child: new Text("ตกลง"),
+              onPressed: () => confirmDelgroup(id),
             ),
-           new FlatButton(
-             child: new Text("ตกลง"),
-            //  onPressed: confirmAddgroup(id),
-           ),
           ],
         );
       },
     );
   }
-    confirmAddgroup(String id) {
-    http.post("${Config.api_url}/api/delgroup", body:{"group_id":id}).then((response) {
+
+  confirmDelgroup(String id) async {
+    print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
+        "  " +
+        id);
+    await Navigator.of(context).pop();
+    print("confirmDelgroup");
+    http.post("${Config.api_url}/api/delgroup", body: {"group_id": id}).then(
+        (response) {
       print(response.body);
       Map resMap = jsonDecode(response.body) as Map;
-      String status = resMap['status'];
-      if (status == "success") {
+      bool status = resMap['success'];
+      if (status == true) {
+        print("status == true");
         setState(() {
-          // _showDialogSuccess();
+          fetchNotes();
+          (context as Element).reassemble();
         });
-      } else {
-
-      }
+      } else {}
     });
   }
 
-    _askedToLead(String id) async {
-    print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI"+"  "+id);
-    String r_id = id ;
+  _askedToLead(String id) async {
+    print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
+        "  " +
+        id);
+    String r_id = id;
     switch (await showDialog<Group>(
         context: context,
         builder: (BuildContext context) {
@@ -100,7 +111,7 @@ class _HomeScreen extends State {
                 child: const Text('แก้ไข'),
               ),
               SimpleDialogOption(
-                onPressed: confirmAddgroup(r_id),
+                onPressed: () => confirmDialogDel(r_id),
                 child: const Text('ลบ'),
               ),
             ],
@@ -221,7 +232,7 @@ class _HomeScreen extends State {
   }
 
   _listItem(index) {
-    String id  = "${_notesForDisplay[index].groupId}";
+    String id = "${_notesForDisplay[index].groupId}";
     return new Column(
       children: <Widget>[
         ListTile(
@@ -238,7 +249,7 @@ class _HomeScreen extends State {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext) => DocumentScreen(
                       //valueFromHome:,
-                      groupId:"${_notesForDisplay[index].groupId}",
+                      groupId: "${_notesForDisplay[index].groupId}",
                     )));
           },
           onLongPress: () {
@@ -254,8 +265,7 @@ class _HomeScreen extends State {
   }
 }
 
-class Group {
-}
+class Group {}
 
 class Note {
   String groupName;
