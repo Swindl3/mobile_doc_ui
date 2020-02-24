@@ -4,8 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_doc/document.dart';
-import 'package:image_cropper/image_cropper.dart';
+import 'package:photo_view/photo_view.dart';
 import 'config.dart';
+import 'globalfunc.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -29,7 +30,7 @@ class _AddDocumentScreen extends State {
 
   TextEditingController _name = TextEditingController();
   TextEditingController _detail = TextEditingController();
-
+  TextEditingController _objt = TextEditingController();
   bool _validate = false;
   File _image;
   String txtImage;
@@ -41,36 +42,37 @@ class _AddDocumentScreen extends State {
       List<int> encode = utf8.encode(base64);
       String decode = utf8.decode(encode);
       txtImage = decode;
-      print(txtImage);
-    }
+      // print(txtImage);
+      Map<String, dynamic> param = Map();
+      param['group_id'] = "${this.groupId}";
+      param['doc_name'] = _name.text;
+      param['doc_description'] = _detail.text;
+      param['doc_objective'] = _objt.text;
+      param['doc_picture'] = txtImage;
 
-    Map<String, dynamic> param = Map();
-    param['group_id'] = "${this.groupId}";
-    param['doc_name'] = _name.text;
-    param['doc_description'] = _detail.text;
-    param['doc_picture'] = txtImage;
-
-    if (_name.text == "" || _detail.text == "" || txtImage == "") {
-      _validate = true;
-      print(
-          "ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
-      setState(() {});
-    } else {
-      _validate = false;
-      http.post("${Config.api_url}/api/adddoc", body: param).then((response) {
-        print(response.body);
-        Map resMap = jsonDecode(response.body) as Map;
-        String status = resMap['status'];
-        if (status == "success") {
-          setState(() {
-            _showDialogSuccess();
-          });
-        } else {}
-      });
+      if (_name.text == "" || _detail.text == "" || txtImage == "") {
+        _validate = true;
+        print(
+            "ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+        setState(() {});
+      } else {
+        _validate = false;
+        http.post("${Config.api_url}/api/adddoc", body: param).then((response) {
+          // print(response.body);
+          Map resMap = jsonDecode(response.body) as Map;
+          String status = resMap['status'];
+          if (status == "success") {
+            setState(() {
+              _showDialogSuccess();
+            });
+          } else {}
+        });
+      }
     }
   }
 
-  void _showDialogSuccess() {
+  void _showDialogSuccess() async {
+    //  await Navigator.of(context).pop();
     // flutter defined function
     showDialog(
       context: context,
@@ -84,6 +86,7 @@ class _AddDocumentScreen extends State {
             new FlatButton(
               child: new Text("ตกลง"),
               onPressed: () {
+                Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext) => DocumentScreen(
                           groupId: "${this.groupId}",
@@ -122,57 +125,26 @@ class _AddDocumentScreen extends State {
   }
 
   getImage(ImageSource source) async {
-    // await Navigator.of(context).pop();
+    await Navigator.of(context).pop();
     File image = await ImagePicker.pickImage(source: source);
     print(image);
-    if(image != null) {
-      File cropped = await ImageCropper.cropImage(
-            sourcePath: image.path,
-            aspectRatio: CropAspectRatio(
-                ratioX: 1, ratioY: 1),
-            compressQuality: 100,
-            maxWidth: 700,
-            maxHeight: 700,
-            compressFormat: ImageCompressFormat.jpg,
-            androidUiSettings: AndroidUiSettings(
-              toolbarColor: Colors.deepOrange,
-              toolbarTitle: "RPS Cropper",
-              statusBarColor: Colors.deepOrange.shade900,
-              backgroundColor: Colors.white,
-            )
-        );
-
-        this.setState((){
-          _image = cropped;
-          
-        });
+    if (image != null) {
+      File croppedFile = await GlobalFunction().cropImg(image);
+      this.setState(() {
+        _image = croppedFile;
+      });
     }
   }
 
   getImageGallery(ImageSource source) async {
-    // await Navigator.of(context).pop();
+    await Navigator.of(context).pop();
     File image = await ImagePicker.pickImage(source: source);
-     if(image != null) {
-      File cropped = await ImageCropper.cropImage(
-            sourcePath: image.path,
-            aspectRatio: CropAspectRatio(
-                ratioX: 1, ratioY: 1),
-            compressQuality: 100,
-            maxWidth: 700,
-            maxHeight: 700,
-            compressFormat: ImageCompressFormat.jpg,
-            androidUiSettings: AndroidUiSettings(
-              toolbarColor: Colors.deepOrange,
-              toolbarTitle: "RPS Cropper",
-              statusBarColor: Colors.deepOrange.shade900,
-              backgroundColor: Colors.white,
-            )
-        );
+    if (image != null) {
+      File croppedFile = await GlobalFunction().cropImg(image);
 
-        this.setState((){
-          _image = cropped;
-          
-        });
+      this.setState(() {
+        _image = croppedFile;
+      });
     }
     // setState(() {
     //   _image = image;
@@ -210,6 +182,17 @@ class _AddDocumentScreen extends State {
               ),
             ),
             Container(
+              margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "แจ้งเพื่อ",
+                  contentPadding: EdgeInsets.all(10.0),
+                  errorText: _validate ? "${Config.err_empty_str}" : null,
+                ),
+                controller: _objt,
+              ),
+            ),
+            Container(
               margin: EdgeInsets.only(
                   top: 30.0, bottom: 30.0, right: 100.0, left: 100.0),
               child: FloatingActionButton.extended(
@@ -220,11 +203,23 @@ class _AddDocumentScreen extends State {
             ),
             Container(
                 margin: EdgeInsets.only(top: 30.0, bottom: 30.0),
+                height: 300.0,
+                width: 300.0,
                 child: Center(
                   child: _image == null
-                      ? new Text("No image selcted")
-                      : new Image.file(_image),
+                      ? new PhotoView(
+                          imageProvider: AssetImage("images/document.png"),
+                          backgroundDecoration:
+                              BoxDecoration(color: Colors.white),
+                          heroAttributes: PhotoViewHeroAttributes(tag: "doc"),
+                        )
+                      : new PhotoView(
+                          imageProvider: FileImage(_image),
+                          backgroundDecoration:
+                              BoxDecoration(color: Colors.white),
+                          heroAttributes: PhotoViewHeroAttributes(tag: "doc")),
                 )),
+            // new Text("No image selcted")
             Container(
               margin: EdgeInsets.only(
                   left: 60.0, right: 60.0, top: 30.0, bottom: 30.0),

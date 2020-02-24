@@ -3,7 +3,7 @@ import 'package:mobile_doc/home.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 import 'dart:convert';
-
+import 'home.dart';
 void main() {
   runApp(MaterialApp(
     home: EditGroupScreen(),

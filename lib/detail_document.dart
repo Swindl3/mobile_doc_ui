@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_doc/edit_document.dart';
@@ -11,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/foundation.dart';
+import 'package:photo_view/photo_view.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -21,16 +21,39 @@ void main() {
 
 class DetailDocumentScreen extends StatefulWidget {
   final String imgPath;
-  DetailDocumentScreen({Key key, this.imgPath}) : super(key: key);
+  final String docName;
+  final String docDesc;
+  final String docObjt;
+  final String docCreate;
+  final String docUpdate;
+  final String docId;
+  DetailDocumentScreen(
+      {Key key,
+      this.imgPath,
+      this.docName,
+      this.docDesc,
+      this.docCreate,
+      this.docUpdate,
+      this.docObjt,
+      this.docId})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _DetailDocumentScreen(this.imgPath);
+    return _DetailDocumentScreen(this.imgPath, this.docName, this.docDesc,
+        this.docCreate, this.docUpdate, this.docObjt, this.docId);
   }
 }
 
 class _DetailDocumentScreen extends State {
   String imgPath;
-  _DetailDocumentScreen(this.imgPath);
+  String docName;
+  String docDesc;
+  String docObjt;
+  String docCreate;
+  String docUpdate;
+  String docId;
+  _DetailDocumentScreen(this.imgPath, this.docName, this.docDesc,
+      this.docCreate, this.docUpdate, this.docObjt, this.docId);
 
   downloadImg() async {
     print(imgPath);
@@ -42,22 +65,64 @@ class _DetailDocumentScreen extends State {
     print(result);
   }
 
-  void _onImageShareButtonPressed() async {
+  void _onImageFile() async {
+    await Navigator.of(context).pop();
     print("${Config.img_url}/" + imgPath);
 
-    var request =
-        await HttpClient().getUrl(Uri.parse("${Config.img_url}/" + imgPath));
-    var response = await request.close();
-    Uint8List bytes = await consolidateHttpClientResponseBytes(response);
-    await Share.file('ESYS AMLOG', 'amlog.jpg', bytes, 'image/jpg');
+    try {
+      var request =
+          await HttpClient().getUrl(Uri.parse("${Config.img_url}/" + imgPath));
+      var response = await request.close();
+      Uint8List bytes = await consolidateHttpClientResponseBytes(response);
+      await Share.file(
+        '$docName',
+        '$docName.jpg',
+        bytes,
+        '*/*',
+      );
+    } catch (e) {
+      print('error: $e');
+    }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    PermissionHandler().requestPermissions(<PermissionGroup>[
-      PermissionGroup.storage,
-    ]);
+  void _onImageUrl() async {
+    await Navigator.of(context).pop();
+    print("${Config.img_url}/" + imgPath);
+
+    try {
+      Share.text(
+          'Link to Doc',
+          'ชื่อเอกสาร:$docName \n รายละเอียด : $docDesc \n แจ้งเพื่อ : $docObjt \n ${Config.img_url}/' +
+              imgPath,
+          'text/plain');
+    } catch (e) {
+      print('error: $e');
+    }
+  }
+
+  _shareOption() async {
+    switch (await showDialog<DetailDocumentScreen>(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: const Text('Share to external'),
+            children: <Widget>[
+              SimpleDialogOption(
+                onPressed: () {
+                  _onImageFile();
+                },
+                child: const Text('แชร์ไฟล์'),
+              ),
+              SimpleDialogOption(
+                onPressed: () {
+                  _onImageUrl();
+                },
+                child: const Text('แชร์ลิงก์'),
+              ),
+            ],
+          );
+        })) {
+    }
   }
 
   Widget build(BuildContext context) {
@@ -70,19 +135,30 @@ class _DetailDocumentScreen extends State {
             child: Container(
                 child: Column(children: <Widget>[
           Container(
-            child: Text("รายละเอียดเอกสาร", style: TextStyle(fontSize: 18.0)),
+            child:
+                Text("ชื่อเอกสาร : $docName", style: TextStyle(fontSize: 18.0)),
+            margin: EdgeInsets.only(top: 30.0),
+          ),
+          Container(
+            child: Text("รายละเอียดเอกสาร : $docDesc",
+                style: TextStyle(fontSize: 18.0)),
+            margin: EdgeInsets.only(top: 30.0),
+          ),
+          Container(
+            child:
+                Text("แจ้งเพื่อ : $docObjt", style: TextStyle(fontSize: 18.0)),
             margin: EdgeInsets.only(top: 30.0),
           ),
           Container(
             child: Text(
-              "วันที่อัปโหลด",
+              "วันที่สร้าง : $docCreate",
               style: TextStyle(fontSize: 16.0),
             ),
             margin: EdgeInsets.only(top: 20.0, right: 20.0),
           ),
           Container(
             child: Text(
-              "วันที่แก้ไขล่าสุด",
+              "วันที่แก้ไขล่าสุด $docUpdate",
               style: TextStyle(fontSize: 16.0),
             ),
             margin: EdgeInsets.only(top: 20.0, right: 20.0),
@@ -110,7 +186,7 @@ class _DetailDocumentScreen extends State {
                         heroTag: "btn_share",
                         icon: Icon(Icons.share),
                         backgroundColor: Colors.blue,
-                        onPressed: _onImageShareButtonPressed,
+                        onPressed: _shareOption,
                       ),
                     ],
                   )
@@ -124,16 +200,22 @@ class _DetailDocumentScreen extends State {
               backgroundColor: Colors.blue,
               onPressed: () => {
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext) => EditDocumentScreen()))
+                    builder: (BuildContext) => EditDocumentScreen(
+                          docName: docName,
+                          docDesc: docDesc,
+                          docId: docId,
+                          docPic: imgPath,
+                          docObjt: docObjt,
+                        )))
               },
             ),
           ),
           Container(
-            child: Image.network(
-              "${Config.img_url}/" + imgPath,
-              loadingBuilder: (context, child, progress) {
-                return progress == null ? child : LinearProgressIndicator();
-              },
+            child: PhotoView(
+              imageProvider: NetworkImage(
+                "${Config.img_url}/" + imgPath,
+              ),
+              backgroundDecoration: BoxDecoration(color: Colors.white),
             ),
             margin: EdgeInsets.all(30.0),
             height: 300.0,

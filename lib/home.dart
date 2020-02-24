@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'config.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -60,7 +61,12 @@ class _HomeScreen extends State {
           content: new Text("แน่ใจที่จะลบ"),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            new FlatButton(child: new Text("ยกเลิก")),
+            new FlatButton(
+              child: new Text("ยกเลิก"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
             new FlatButton(
               child: new Text("ตกลง"),
               onPressed: () => confirmDelgroup(id),
@@ -86,13 +92,13 @@ class _HomeScreen extends State {
         print("status == true");
         setState(() {
           Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => HomeScreen()));
+              builder: (BuildContext context) => HomeScreen()));
         });
       } else {}
     });
   }
 
-  _askedToLead(String id,String groupName, String groupDesc) async {
+  _askedToLead(String id, String groupName, String groupDesc) async {
     print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
         "  " +
         id);
@@ -104,7 +110,7 @@ class _HomeScreen extends State {
             title: const Text('Select assignment'),
             children: <Widget>[
               SimpleDialogOption(
-                onPressed: () => getEditGroup(groupName,groupDesc,id),
+                onPressed: () => getEditGroup(groupName, groupDesc, id),
                 child: const Text('แก้ไข'),
               ),
               SimpleDialogOption(
@@ -125,17 +131,21 @@ class _HomeScreen extends State {
         _notesForDisplay = _notes;
       });
     });
+    PermissionHandler().requestPermissions(<PermissionGroup>[
+      PermissionGroup.storage,
+    ]);
     super.initState();
   }
 
-  Future getEditGroup(String groupName , String groupDesc, String groupId) async {
+  Future getEditGroup(
+      String groupName, String groupDesc, String groupId) async {
     await Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (BuildContext context) => EditGroupScreen(
-             groupName: groupName,
-          groupDesc:groupDesc ,
-          groupId: groupId,
-        )));
+              groupName: groupName,
+              groupDesc: groupDesc,
+              groupId: groupId,
+            )));
 
     setState(() {});
   }
@@ -256,7 +266,7 @@ class _HomeScreen extends State {
                     )));
           },
           onLongPress: () {
-            _askedToLead(id,groupName,groupDesc);
+            _askedToLead(id, groupName, groupDesc);
           },
         ),
         Divider(

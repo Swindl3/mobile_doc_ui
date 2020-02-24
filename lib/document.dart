@@ -20,7 +20,7 @@ void main() {
 }
 
 class DocumentScreen extends StatefulWidget {
-   final String groupId ;
+  final String groupId;
   DocumentScreen({Key key, this.groupId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
@@ -38,15 +38,13 @@ class _DocumentScreen extends State {
   List<Note> _notesForDisplay = List<Note>();
 
   Future<List<Note>> fetchNotes() async {
-    
     var url = "${Config.api_url}/api/getdoc";
-    var response = await http.post(url,body: {"group_id":"${this.groupId}"});
+    var response = await http.post(url, body: {"group_id": "${this.groupId}"});
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
     var notes = List<Note>();
 
     if (response.statusCode == 200) {
-
       var notesJson = json.decode(response.body);
       print(notesJson['body']);
       print(response.body);
@@ -59,7 +57,8 @@ class _DocumentScreen extends State {
     return notes;
   }
 
-  Future<void> _askedToLead() async {
+  Future<void> _askedToLead(String docName, String docDesc, String docPic,
+      String docId, String docObjt) async {
     switch (await showDialog<Group>(
         context: context,
         builder: (BuildContext context) {
@@ -67,11 +66,14 @@ class _DocumentScreen extends State {
             title: const Text('Select assignment'),
             children: <Widget>[
               SimpleDialogOption(
-                onPressed: getEditGruop,
+                onPressed: () =>
+                    getEditDoc(docName, docDesc, docPic, docId, docObjt),
                 child: const Text('แก้ไข'),
               ),
               SimpleDialogOption(
-                onPressed: () {},
+                onPressed: () {
+                  confirmDialogDel(docId);
+                },
                 child: const Text('ลบ'),
               ),
             ],
@@ -82,7 +84,6 @@ class _DocumentScreen extends State {
 
   @override
   void initState() {
-    
     fetchNotes().then((value) {
       setState(() {
         _notes.addAll(value);
@@ -92,20 +93,68 @@ class _DocumentScreen extends State {
     super.initState();
   }
 
-  Future getEditGruop() async {
+  Future getEditDoc(String docName, String docDesc, String docPic, String docId,
+      String docObjt) async {
     await Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditDocumentScreen()));
+        builder: (BuildContext context) => EditDocumentScreen(
+              docName: docName,
+              docDesc: docDesc,
+              docPic: docPic,
+              docId: docId,
+              docObjt: docObjt,
+            )));
 
     setState(() {});
   }
 
-  Future getDeleteGruop() async {
+  confirmDialogDel(String id) async {
+    // flutter defined function
     await Navigator.of(context).pop();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditDocumentScreen()));
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: new Text("แน่ใจที่จะลบ"),
+          content: new Text("แน่ใจที่จะลบ"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(child: new Text("ยกเลิก"),
+            onPressed: () {
+                Navigator.of(context).pop();
+            }   ,),
+            new FlatButton(
+              child: new Text("ตกลง"),
+              onPressed: () => confirmDelDoc(id),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-    setState(() {});
+  confirmDelDoc(String id) async {
+    print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
+        "  " +
+        id);
+    await Navigator.of(context).pop();
+    print("confirmDelgroup");
+    http.post("${Config.api_url}/api/deldoc", body: {"doc_id": id}).then(
+        (response) {
+      print(response.body);
+      Map resMap = jsonDecode(response.body) as Map;
+      bool status = resMap['success'];
+      if (status == true) {
+        print("status == true");
+        setState(() {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext context) => DocumentScreen(
+                groupId: groupId,
+              )));
+        });
+      } else {}
+    });
   }
 
   @override
@@ -122,10 +171,10 @@ class _DocumentScreen extends State {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => {
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext) => AddDocumentScreen(
-                groupId: "${this.groupId}",
-              )))
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext) => AddDocumentScreen(
+                    groupId: "${this.groupId}",
+                  )))
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
@@ -172,11 +221,22 @@ class _DocumentScreen extends State {
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext) => DetailDocumentScreen(
-                  imgPath: "${_notesForDisplay[index].docPicture}",
-                )));
+                      imgPath: "${_notesForDisplay[index].docPicture}",
+                      docCreate: "${_notesForDisplay[index].docCreate}",
+                      docUpdate: "${_notesForDisplay[index].docUpdate}",
+                      docName: "${_notesForDisplay[index].docName}",
+                      docDesc: "${_notesForDisplay[index].docDesc}",
+                      docObjt: "${_notesForDisplay[index].docObjt}",
+                      docId: "${_notesForDisplay[index].docId}",
+                    )));
           },
           onLongPress: () {
-            _askedToLead();
+            _askedToLead(
+                "${_notesForDisplay[index].docName}",
+                "${_notesForDisplay[index].docDesc}",
+                "${_notesForDisplay[index].docPicture}",
+                "${_notesForDisplay[index].docId}",
+                "${_notesForDisplay[index].docObjt}");
           },
         ),
         Divider(
@@ -192,11 +252,19 @@ class Note {
   String docName;
   String docPicture;
   String docDesc;
+  String docId;
+  String docObjt;
+  String docCreate;
+  String docUpdate;
   Note(this.docName);
   // Note(this.groupId);
   Note.fromJson(Map<String, dynamic> json) {
     docName = json['doc_name'];
     docPicture = json['doc_picture'];
     docDesc = json['doc_description'];
+    docId = json['doc_id'].toString();
+    docObjt = json['doc_objective'];
+    docCreate = json['doc_create'].toString();
+    docUpdate = json['doc_update'].toString();
   }
 }
