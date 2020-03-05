@@ -8,35 +8,134 @@ import 'dart:convert';
 import 'dart:async';
 import 'config.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:developer';
+
+import 'group.dart';
 
 void main() {
   runApp(MaterialApp(
-    home: HomeScreen(),
+    home: CreateGroupScreen(),
     debugShowCheckedModeBanner: false,
   ));
 }
 
-class HomeScreen extends StatefulWidget {
-  final groupUserId;
+class CreateGroupScreen extends StatefulWidget {
   final userId;
-  HomeScreen({Key key, this.groupUserId, this.userId}) : super(key: key);
+  CreateGroupScreen({Key key, this.userId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _HomeScreen(this.groupUserId, this.userId);
+    return _CreateGroupScreen(this.userId);
   }
 }
 
-class _HomeScreen extends State {
-  String groupUserId;
+class _CreateGroupScreen extends State {
   String userId;
-  _HomeScreen(this.groupUserId, this.userId);
+  _CreateGroupScreen(this.userId);
   String filteredUser(String s) => s[0].toUpperCase() + s.substring(1);
+  List userGroup = [];
+  bool _validate = false;
+  TextEditingController groupUserName = TextEditingController();
+  sendList() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              content: Form(
+                  child:
+                      Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("เพิ่มกลุ่ม", style: TextStyle(fontSize: 16.0)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "ชื่อกลุ่ม",
+                  contentPadding: EdgeInsets.all(10.0),
+                  icon: Icon(Icons.people),
+                  errorText: _validate ? "${Config.err_empty_str}" : null,
+                ),
+                controller: groupUserName,
+              ),
+            ),
+            Row(
+              children: <Widget>[
+                Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: RaisedButton(
+                        child: Text("ยืนยัน"),
+                        color: Colors.green,
+                        textColor: Colors.white,
+                        onPressed: () {
+                          addUserToGroup();
+                        })),
+                Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: RaisedButton(
+                        child: Text("ยกเลิก"),
+                        color: Colors.red,
+                        textColor: Colors.white,
+                        onPressed: () {
+                          groupUserName.clear();
+                          Navigator.of(context).pop();
+                        }))
+              ],
+            )
+          ])));
+        });
+  }
+
+  String insertId;
+  int count = 0;
+  void addUserToGroup() async {
+    if (groupUserName.text.trim().isEmpty) {
+      _validate = true;
+      print("Empty");
+    } else {
+      _validate = false;
+      Map<String, String> params = Map();
+      params['groupuser_name'] = groupUserName.text.trim();
+      params['user_id'] = userId;
+      http
+          .post('${Config.api_url}/api/creategroupuser', body: params)
+          .then((response) {
+        Map resMap = jsonDecode(response.body) as Map;
+        bool status = resMap['success'];
+        if (status == true) {
+          insertId = resMap['body']['insertId'].toString();
+          print("INSERT ID IS : ${insertId}");
+          for (var user in userGroup) {
+            http.post('${Config.api_url}/api/createuserdoc', body: {
+              'groupuser_id': insertId,
+              'user_id': user.toString()
+            }).then((response) {
+              Map resMap = jsonDecode(response.body) as Map;
+              bool status = resMap['success'];
+              if (status == true) {
+                count = count + 1;
+                print('TRUEEEEEEEEEEEEEEE IN TIME 2');
+                if (userGroup.length == count) {
+                  print(userGroup.length);
+                  print(count);
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext) => GroupScreen(userId: userId)));
+                }
+              }
+            });
+          }
+        } else {
+          print("Insert Failed");
+        }
+      });
+    }
+  }
 
   List<Note> _notes = List<Note>();
   List<Note> _notesForDisplay = List<Note>();
   Future<List<Note>> fetchNotes() async {
-    var url = "${Config.api_url}/api/getgroup";
-    var response = await http.post(url, body: {"groupuser_id": groupUserId});
+    var url = "${Config.api_url}/api/getuser";
+    var response = await http.post(url, body: {"user_id": userId});
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
     var notes = List<Note>();
@@ -98,10 +197,7 @@ class _HomeScreen extends State {
         print("status == true");
         setState(() {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => HomeScreen(
-                    groupUserId: groupUserId,
-                    userId: userId,
-                  )));
+              builder: (BuildContext context) => CreateGroupScreen()));
         });
       } else {}
     });
@@ -134,8 +230,10 @@ class _HomeScreen extends State {
 
   @override
   void initState() {
-    print("HOME SCREEN user ID is ${userId}");
-    print("HOME SCREEN user ID is ${groupUserId}");
+    userGroup.clear();
+    print("userGroup init : ${userGroup}");
+    userGroup.add(userId);
+    print("userGroup init : ${userGroup}");
     fetchNotes().then((value) {
       setState(() {
         _notes.addAll(value);
@@ -173,7 +271,16 @@ class _HomeScreen extends State {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("หน้าหลัก"),
+        title: Text("สร้างกลุ่ม"),
+        actions: <Widget>[
+          userGroup.length > 1
+              ? IconButton(
+                  icon: Icon(Icons.add),
+                  iconSize: 30.0,
+                  onPressed: () => sendList())
+              : IconButton(icon: Icon(Icons.add), iconSize: 30.0)
+          // print(userGroup.toSet().toList())
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -221,11 +328,8 @@ class _HomeScreen extends State {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext) => AddGroupScreen(
-                    groupUserId: groupUserId,
-                    userId: userId,
-                  )))
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (BuildContext) => AddGroupScreen()))
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
@@ -247,7 +351,7 @@ class _HomeScreen extends State {
           text = text.toLowerCase();
           setState(() {
             _notesForDisplay = _notes.where((note) {
-              var noteTitle = note.groupName.toLowerCase();
+              var noteTitle = note.mixedForSearch.toLowerCase();
               return noteTitle.contains(text);
             }).toList();
           });
@@ -257,30 +361,42 @@ class _HomeScreen extends State {
   }
 
   _listItem(index) {
-    String id = "${_notesForDisplay[index].groupId}";
-    String groupName = "${_notesForDisplay[index].groupName}";
-    String groupDesc = "${_notesForDisplay[index].groupDesc}";
+    String id = "${_notesForDisplay[index].userId}";
+    // String groupName = "${_notesForDisplay[index].groupName}";
+    // String groupDesc = "${_notesForDisplay[index].groupDesc}";
     return new Column(
       children: <Widget>[
         ListTile(
           leading: Image.asset("images/group.png"),
           title: Text(
-            "${_notesForDisplay[index].groupName}",
+            "${_notesForDisplay[index].userName}",
             style: new TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Text("${_notesForDisplay[index].groupDesc}"),
-          trailing: Icon(Icons.arrow_drop_down),
+          subtitle: Text("${_notesForDisplay[index].firstName}" +
+              "  " +
+              "${_notesForDisplay[index].lastName}"),
+          trailing: (_notesForDisplay[index].selected)
+              ? Icon(Icons.check_box)
+              : Icon(Icons.check_box_outline_blank),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext) => DocumentScreen(
-                      groupUserId: groupUserId,
-                      groupId: "${_notesForDisplay[index].groupId}",
-                    )));
+            print(_notesForDisplay[index].userId);
+            print(_notesForDisplay[index].selected);
+            setState(() {
+              _notesForDisplay[index].selected =
+                  !_notesForDisplay[index].selected;
+              log(_notesForDisplay[index].selected.toString());
+              if (_notesForDisplay[index].selected == true) {
+                userGroup.add(_notesForDisplay[index].userId);
+              } else if (_notesForDisplay[index].selected == false) {
+                userGroup.remove(_notesForDisplay[index].userId);
+              }
+            });
           },
+          selected: _notesForDisplay[index].selected,
           onLongPress: () {
-            _askedToLead(id, groupName, groupDesc);
+            // _askedToLead(id, groupName, groupDesc);
           },
         ),
         Divider(
@@ -295,14 +411,19 @@ class _HomeScreen extends State {
 class Group {}
 
 class Note {
-  String groupName;
-  String groupId;
-  String groupDesc;
-  Note(this.groupName);
+  String firstName;
+  String userId;
+  String lastName;
+  String userName;
+  String mixedForSearch;
+  Note(this.firstName);
+  bool selected = false;
   // Note(this.groupId);
   Note.fromJson(Map<String, dynamic> json) {
-    groupName = json['group_name'];
-    groupId = json['group_id'].toString();
-    groupDesc = json['group_description'];
+    firstName = json['user_fname'];
+    userId = json['user_id'].toString();
+    lastName = json['user_lname'];
+    userName = json['user_username'];
+    mixedForSearch = firstName + lastName + userName;
   }
 }

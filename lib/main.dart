@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'config.dart';
 import 'dart:convert';
 import 'home.dart';
+import 'group.dart';
+
 void main() {
   runApp(MaterialApp(
     home: DocApp(),
@@ -23,8 +25,8 @@ class _DocApp extends State {
   TextEditingController _userName = TextEditingController();
   TextEditingController _passWord = TextEditingController();
   bool _validate = false;
-  int get userId => null;
-
+  // int get userId => null;
+  String userId;
   void onLogin() {
     print("onLogin");
     Map<String, String> params = Map();
@@ -39,16 +41,19 @@ class _DocApp extends State {
         Map resMap = jsonDecode(response.body) as Map;
         bool status = resMap['success'];
         if (status == true) {
+          for (var items in resMap['body']) {
+            userId = items['user_id'].toString();
+          }
           print("Login Succeeded");
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (BuildContext) => HomeScreen()));
+          print(resMap['body']);
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext) => GroupScreen(userId: userId)));
         } else {
           print("Login Failed");
         }
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

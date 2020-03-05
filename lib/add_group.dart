@@ -13,20 +13,31 @@ void main() {
 }
 
 class AddGroupScreen extends StatefulWidget {
+  final String groupUserId;
+  final String userId;
+  AddGroupScreen({Key key, this.groupUserId,this.userId}):super(key :key);
   @override
   State<StatefulWidget> createState() {
-    return _AddGroupScreen();
+    return _AddGroupScreen(this.groupUserId,this.userId);
   }
 }
 
 class _AddGroupScreen extends State {
+  String groupUserId;
+  String userId;
+  _AddGroupScreen(this.groupUserId,this.userId);
   TextEditingController _name = TextEditingController();
   TextEditingController _detail = TextEditingController();
   bool _validate = false;
   void confirmAddgroup() {
+
     Map<String, dynamic> param = Map();
     param['group_name'] = _name.text;
     param['group_description'] = _detail.text;
+    param['groupuser_id'] = groupUserId;
+    param['user_id'] = userId;
+
+    print(param);
     if (_name.text == "" || _detail.text == "") {
       _validate = true;
     } else {
@@ -59,7 +70,7 @@ class _AddGroupScreen extends State {
               child: new Text("ตกลง"),
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => HomeScreen()));
+                    builder: (BuildContext context) => HomeScreen(groupUserId: groupUserId,)));
               },
             ),
           ],

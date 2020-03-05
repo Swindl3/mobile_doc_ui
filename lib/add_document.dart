@@ -17,16 +17,18 @@ void main() {
 
 class AddDocumentScreen extends StatefulWidget {
   final String groupId;
-  AddDocumentScreen({Key key, this.groupId}) : super(key: key);
+  final String groupUserId;
+  AddDocumentScreen({Key key, this.groupId,this.groupUserId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _AddDocumentScreen(this.groupId);
+    return _AddDocumentScreen(this.groupId,this.groupUserId);
   }
 }
 
 class _AddDocumentScreen extends State {
   String groupId;
-  _AddDocumentScreen(this.groupId);
+  String groupUserId;
+  _AddDocumentScreen(this.groupId,this.groupUserId);
 
   TextEditingController _name = TextEditingController();
   TextEditingController _detail = TextEditingController();
@@ -49,7 +51,8 @@ class _AddDocumentScreen extends State {
       param['doc_description'] = _detail.text;
       param['doc_objective'] = _objt.text;
       param['doc_picture'] = txtImage;
-
+      param['groupuser_id'] = groupUserId;
+      print(param);
       if (_name.text == "" || _detail.text == "" || txtImage == "") {
         _validate = true;
         print(

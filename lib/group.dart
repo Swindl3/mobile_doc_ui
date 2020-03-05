@@ -4,50 +4,51 @@ import 'package:mobile_doc/document.dart';
 import 'package:mobile_doc/add_group.dart';
 import 'package:mobile_doc/edit_group.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile_doc/home.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'config.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'group_user.dart';
 
 void main() {
   runApp(MaterialApp(
-    home: HomeScreen(),
+    home: GroupScreen(),
     debugShowCheckedModeBanner: false,
   ));
 }
 
-class HomeScreen extends StatefulWidget {
-  final groupUserId;
-  final userId;
-  HomeScreen({Key key, this.groupUserId, this.userId}) : super(key: key);
+class GroupScreen extends StatefulWidget {
+  final String userId;
+  GroupScreen({Key key, this.userId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _HomeScreen(this.groupUserId, this.userId);
+    return _GroupScreen(this.userId);
   }
 }
 
-class _HomeScreen extends State {
-  String groupUserId;
+class _GroupScreen extends State {
+  
   String userId;
-  _HomeScreen(this.groupUserId, this.userId);
+ 
+  String groupUserId;
+  _GroupScreen(this.userId);
   String filteredUser(String s) => s[0].toUpperCase() + s.substring(1);
-
+  var notes = List<Note>();
   List<Note> _notes = List<Note>();
   List<Note> _notesForDisplay = List<Note>();
   Future<List<Note>> fetchNotes() async {
-    var url = "${Config.api_url}/api/getgroup";
-    var response = await http.post(url, body: {"groupuser_id": groupUserId});
+    var url = "${Config.api_url}/api/getgroupuser";
+    var response = await http.post(url, body: {"user_id": userId});
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
-    var notes = List<Note>();
+    
 
     if (response.statusCode == 200) {
       var notesJson = json.decode(response.body);
       print(notesJson['body']);
       print(response.body);
       for (var noteJson in notesJson['body']) {
-        print(noteJson['group_name']);
-        print(noteJson['group_id']);
         notes.add(Note.fromJson(noteJson));
       }
       setState(() {});
@@ -89,7 +90,7 @@ class _HomeScreen extends State {
         id);
     await Navigator.of(context).pop();
     print("confirmDelgroup");
-    http.post("${Config.api_url}/api/delgroup", body: {"group_id": id}).then(
+    http.post("${Config.api_url}/api/delgroupuser", body: {"groupuser_id": id}).then(
         (response) {
       print(response.body);
       Map resMap = jsonDecode(response.body) as Map;
@@ -98,16 +99,15 @@ class _HomeScreen extends State {
         print("status == true");
         setState(() {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => HomeScreen(
-                    groupUserId: groupUserId,
-                    userId: userId,
-                  )));
+              builder: (BuildContext context) => GroupScreen(
+                userId: userId,
+              )));
         });
       } else {}
     });
   }
 
-  _askedToLead(String id, String groupName, String groupDesc) async {
+  _askedToLead(String id, String groupName) async {
     print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
         "  " +
         id);
@@ -119,7 +119,7 @@ class _HomeScreen extends State {
             title: const Text('Select assignment'),
             children: <Widget>[
               SimpleDialogOption(
-                onPressed: () => getEditGroup(groupName, groupDesc, id),
+                onPressed: () => getEditGroup(id,groupName),
                 child: const Text('แก้ไข'),
               ),
               SimpleDialogOption(
@@ -134,8 +134,7 @@ class _HomeScreen extends State {
 
   @override
   void initState() {
-    print("HOME SCREEN user ID is ${userId}");
-    print("HOME SCREEN user ID is ${groupUserId}");
+     print("userId isssssssssssssssssssssssssssssssssssssssssssssssssssssssss   ::   ${userId}");
     fetchNotes().then((value) {
       setState(() {
         _notes.addAll(value);
@@ -149,12 +148,11 @@ class _HomeScreen extends State {
   }
 
   Future getEditGroup(
-      String groupName, String groupDesc, String groupId) async {
+      String groupId,String groupName, ) async {
     await Navigator.of(context).pop();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (BuildContext context) => EditGroupScreen(
               groupName: groupName,
-              groupDesc: groupDesc,
               groupId: groupId,
             )));
 
@@ -173,7 +171,7 @@ class _HomeScreen extends State {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("หน้าหลัก"),
+        title: Text("กลุ่มของฉัน"),
       ),
       drawer: Drawer(
         child: ListView(
@@ -222,8 +220,7 @@ class _HomeScreen extends State {
       floatingActionButton: FloatingActionButton(
         onPressed: () => {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext) => AddGroupScreen(
-                    groupUserId: groupUserId,
+              builder: (BuildContext) => CreateGroupScreen(
                     userId: userId,
                   )))
         },
@@ -247,7 +244,7 @@ class _HomeScreen extends State {
           text = text.toLowerCase();
           setState(() {
             _notesForDisplay = _notes.where((note) {
-              var noteTitle = note.groupName.toLowerCase();
+              var noteTitle = note.groupUserName.toLowerCase();
               return noteTitle.contains(text);
             }).toList();
           });
@@ -257,30 +254,34 @@ class _HomeScreen extends State {
   }
 
   _listItem(index) {
-    String id = "${_notesForDisplay[index].groupId}";
-    String groupName = "${_notesForDisplay[index].groupName}";
-    String groupDesc = "${_notesForDisplay[index].groupDesc}";
+    // String id = "${_notesForDisplay[index].groupId}";
+    // String groupName = "${_notesForDisplay[index].groupName}";
+    // String groupDesc = "${_notesForDisplay[index].groupDesc}";
+    String idUsercreateGroup = "${_notesForDisplay[index].noteUserId}";
+    print("User id is : ${userId} and idCompare is : ${idUsercreateGroup}");
+    print("USER IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD IS ${userId}");
     return new Column(
       children: <Widget>[
+      
         ListTile(
           leading: Image.asset("images/group.png"),
           title: Text(
-            "${_notesForDisplay[index].groupName}",
+            "${_notesForDisplay[index].groupUserName}",
             style: new TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Text("${_notesForDisplay[index].groupDesc}"),
+          // subtitle: Text("${_notesForDisplay[index].groupDesc}"),
           trailing: Icon(Icons.arrow_drop_down),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext) => DocumentScreen(
-                      groupUserId: groupUserId,
-                      groupId: "${_notesForDisplay[index].groupId}",
+                builder: (BuildContext) => HomeScreen(
+                      groupUserId: "${_notesForDisplay[index].groupUserId}",
+                      userId: userId,
                     )));
           },
           onLongPress: () {
-            _askedToLead(id, groupName, groupDesc);
+            userId  == idUsercreateGroup ? _askedToLead("${_notesForDisplay[index].groupUserId}", "${_notesForDisplay[index].groupUserName}") : null;
           },
         ),
         Divider(
@@ -295,14 +296,14 @@ class _HomeScreen extends State {
 class Group {}
 
 class Note {
-  String groupName;
-  String groupId;
-  String groupDesc;
-  Note(this.groupName);
+  String groupUserName;
+  String groupUserId;
+  String noteUserId;
+  Note(this.groupUserName);
   // Note(this.groupId);
   Note.fromJson(Map<String, dynamic> json) {
-    groupName = json['group_name'];
-    groupId = json['group_id'].toString();
-    groupDesc = json['group_description'];
+    groupUserName = json['groupuser_name'];
+    groupUserId = json['groupuser_id'].toString();
+    noteUserId = json['user_id'].toString();
   }
 }

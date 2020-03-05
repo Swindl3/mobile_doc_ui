@@ -21,16 +21,18 @@ void main() {
 
 class DocumentScreen extends StatefulWidget {
   final String groupId;
-  DocumentScreen({Key key, this.groupId}) : super(key: key);
+  final String groupUserId;
+  DocumentScreen({Key key, this.groupId,this.groupUserId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _DocumentScreen(this.groupId);
+    return _DocumentScreen(this.groupId,this.groupUserId);
   }
 }
 
 class _DocumentScreen extends State {
   String groupId;
-  _DocumentScreen(this.groupId);
+  String groupUserId;
+  _DocumentScreen(this.groupId,this.groupUserId);
 
   String filteredUser(String s) => s[0].toUpperCase() + s.substring(1);
 
@@ -84,6 +86,7 @@ class _DocumentScreen extends State {
 
   @override
   void initState() {
+    print("DocumentScreennnnnnnnnnnnnnnnn ${groupUserId}");
     fetchNotes().then((value) {
       setState(() {
         _notes.addAll(value);
@@ -173,6 +176,7 @@ class _DocumentScreen extends State {
         onPressed: () => {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext) => AddDocumentScreen(
+                groupUserId:groupUserId,
                     groupId: "${this.groupId}",
                   )))
         },
