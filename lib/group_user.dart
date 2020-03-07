@@ -326,14 +326,6 @@ class _CreateGroupScreen extends State {
         },
         itemCount: _notesForDisplay.length + 1,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => {
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext) => AddGroupScreen()))
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
-      ),
     );
   }
 

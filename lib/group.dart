@@ -5,11 +5,12 @@ import 'package:mobile_doc/add_group.dart';
 import 'package:mobile_doc/edit_group.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_doc/home.dart';
+import 'package:mobile_doc/manage_user.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'config.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'group_user.dart';
+import 'package:mobile_doc/group_user.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -28,9 +29,8 @@ class GroupScreen extends StatefulWidget {
 }
 
 class _GroupScreen extends State {
-  
   String userId;
- 
+
   String groupUserId;
   _GroupScreen(this.userId);
   String filteredUser(String s) => s[0].toUpperCase() + s.substring(1);
@@ -42,7 +42,6 @@ class _GroupScreen extends State {
     var response = await http.post(url, body: {"user_id": userId});
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
-    
 
     if (response.statusCode == 200) {
       var notesJson = json.decode(response.body);
@@ -54,6 +53,99 @@ class _GroupScreen extends State {
       setState(() {});
     }
     return notes;
+  }
+
+  bool _validate = false;
+  var groupUserName = TextEditingController();
+  editGroupName(String groupUserId, String groupName) {
+    groupUserName.text = groupName;
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+                content: Form(
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text("แก้ไขชื่อกลุ่ม",
+                        style: TextStyle(fontSize: 16.0)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        hintText: "ชื่อกลุ่ม",
+                        contentPadding: EdgeInsets.all(10.0),
+                        icon: Icon(Icons.people),
+                        errorText: _validate ? "${Config.err_empty_str}" : null,
+                      ),
+                      controller: groupUserName,
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: RaisedButton(
+                              child: Text("ยืนยัน"),
+                              color: Colors.green,
+                              textColor: Colors.white,
+                              onPressed: () {
+                                setState(() {
+                                  groupUserName.text.trim() == ""
+                                      ? _validate = true
+                                      : Navigator.of(context).pop();
+                                  editGroup(groupUserId, groupUserName.text); 
+                                });
+                              })),
+                      Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: RaisedButton(
+                              child: Text("ยกเลิก"),
+                              color: Colors.red,
+                              textColor: Colors.white,
+                              onPressed: () {
+                                groupUserName.clear();
+                                Navigator.of(context).pop();
+                              }))
+                    ],
+                  )
+                ])));
+          });
+        });
+  }
+
+  void editGroup(String groupUserId, String groupUserName) {
+    Map<String, dynamic> param = Map();
+
+    if (groupUserName.trim() == "") {
+      _validate = true;
+      print("String Empty");
+    } else {
+      param['groupuser_name'] = groupUserName;
+      param['groupuser_id'] = groupUserId;
+      _validate = false;
+      http
+          .post("${Config.api_url}/api/editgroupname", body: param)
+          .then((response) {
+        print(response.body);
+        Map resMap = jsonDecode(response.body) as Map;
+        String status = resMap['status'];
+        if (status == "success") {
+          setState(() {
+              
+                Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext context) => GroupScreen(
+                    userId: userId,
+                  )));
+                  // Navigator.of(context).pop().;
+          });
+        } else {}
+      });
+    }
   }
 
   confirmDialogDel(String id) async {
@@ -90,8 +182,8 @@ class _GroupScreen extends State {
         id);
     await Navigator.of(context).pop();
     print("confirmDelgroup");
-    http.post("${Config.api_url}/api/delgroupuser", body: {"groupuser_id": id}).then(
-        (response) {
+    http.post("${Config.api_url}/api/delgroupuser",
+        body: {"groupuser_id": id}).then((response) {
       print(response.body);
       Map resMap = jsonDecode(response.body) as Map;
       bool status = resMap['success'];
@@ -100,18 +192,18 @@ class _GroupScreen extends State {
         setState(() {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) => GroupScreen(
-                userId: userId,
-              )));
+                    userId: userId,
+                  )));
         });
       } else {}
     });
   }
 
-  _askedToLead(String id, String groupName) async {
-    print("IDIDIDIDIDIDIIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIDIIDIDIDIDIDIDIDI" +
+  _askedToLead(String groupUserId, String groupName) async {
+    print("groupUserIdgroupUserIdgroupUserIdgroupUserIdgroupUserId" +
         "  " +
-        id);
-    String r_id = id;
+        groupUserId);
+    print("userIduserIduserIduserIduserIduserId" + userId);
     switch (await showDialog<Group>(
         context: context,
         builder: (BuildContext context) {
@@ -119,11 +211,34 @@ class _GroupScreen extends State {
             title: const Text('Select assignment'),
             children: <Widget>[
               SimpleDialogOption(
-                onPressed: () => getEditGroup(id,groupName),
+                onPressed: () => {
+                  Navigator.of(context).pop(),
+                  UserGroupScreen(userId: userId),
+                  AddUserGroupScreen(
+                    userId: userId,
+                    groupUserId: groupUserId,
+                  ),
+                  Navigator.of(context).pop(),
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => ManageUserTab(
+                            groupUserId: groupUserId,
+                            userId: userId,
+                          )))
+                },
+                child: const Text('จัดการสมาชิก'),
+              ),
+              SimpleDialogOption(
+                onPressed: () => {
+                  Navigator.of(context).pop(),
+                  editGroupName(groupUserId, groupName)
+                },
                 child: const Text('แก้ไข'),
               ),
               SimpleDialogOption(
-                onPressed: () => confirmDialogDel(r_id),
+                onPressed: () => {
+                  Navigator.of(context).pop(),
+                  confirmDialogDel(groupUserId)
+                },
                 child: const Text('ลบ'),
               ),
             ],
@@ -134,7 +249,8 @@ class _GroupScreen extends State {
 
   @override
   void initState() {
-     print("userId isssssssssssssssssssssssssssssssssssssssssssssssssssssssss   ::   ${userId}");
+    print(
+        "userId isssssssssssssssssssssssssssssssssssssssssssssssssssssssss   ::   ${userId}");
     fetchNotes().then((value) {
       setState(() {
         _notes.addAll(value);
@@ -145,26 +261,6 @@ class _GroupScreen extends State {
       PermissionGroup.storage,
     ]);
     super.initState();
-  }
-
-  Future getEditGroup(
-      String groupId,String groupName, ) async {
-    await Navigator.of(context).pop();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditGroupScreen(
-              groupName: groupName,
-              groupId: groupId,
-            )));
-
-    setState(() {});
-  }
-
-  Future getDeleteGruop() async {
-    await Navigator.of(context).pop();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditGroupScreen()));
-
-    setState(() {});
   }
 
   @override
@@ -259,10 +355,10 @@ class _GroupScreen extends State {
     // String groupDesc = "${_notesForDisplay[index].groupDesc}";
     String idUsercreateGroup = "${_notesForDisplay[index].noteUserId}";
     print("User id is : ${userId} and idCompare is : ${idUsercreateGroup}");
-    print("USER IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD IS ${userId}");
+    print(
+        "USER IDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD IS ${userId}");
     return new Column(
       children: <Widget>[
-      
         ListTile(
           leading: Image.asset("images/group.png"),
           title: Text(
@@ -281,7 +377,10 @@ class _GroupScreen extends State {
                     )));
           },
           onLongPress: () {
-            userId  == idUsercreateGroup ? _askedToLead("${_notesForDisplay[index].groupUserId}", "${_notesForDisplay[index].groupUserName}") : null;
+            userId == idUsercreateGroup
+                ? _askedToLead("${_notesForDisplay[index].groupUserId}",
+                    "${_notesForDisplay[index].groupUserName}")
+                : null;
           },
         ),
         Divider(
