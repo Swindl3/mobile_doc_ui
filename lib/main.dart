@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_doc/register.dart';
-import 'package:mobile_doc/home.dart';
+import 'package:mobile_doc/doc_category.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 import 'dart:convert';
-import 'home.dart';
+import 'doc_category.dart';
 import 'group.dart';
 
 void main() {
@@ -67,9 +67,9 @@ class _DocApp extends State {
           height: 300.0,
           padding: EdgeInsets.all(35.0),
         ),
-        Center(
-          child: Text("Log-in to myApp", style: TextStyle(fontSize: 16.0)),
-        ),
+        // Center(
+        //   child: Text("Log-in to myApp", style: TextStyle(fontSize: 16.0)),
+        // ),
         Container(
           margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 20.0),
           child: TextField(

@@ -4,7 +4,7 @@ import 'package:mobile_doc/document.dart';
 import 'package:mobile_doc/add_group.dart';
 import 'package:mobile_doc/edit_group.dart';
 import 'package:http/http.dart' as http;
-import 'package:mobile_doc/home.dart';
+import 'package:mobile_doc/doc_category.dart';
 import 'package:mobile_doc/manage_user.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -98,7 +98,7 @@ class _GroupScreen extends State {
                                   groupUserName.text.trim() == ""
                                       ? _validate = true
                                       : Navigator.of(context).pop();
-                                  editGroup(groupUserId, groupUserName.text); 
+                                  editGroup(groupUserId, groupUserName.text);
                                 });
                               })),
                       Padding(
@@ -136,12 +136,11 @@ class _GroupScreen extends State {
         String status = resMap['status'];
         if (status == "success") {
           setState(() {
-              
-                Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => GroupScreen(
-                    userId: userId,
-                  )));
-                  // Navigator.of(context).pop().;
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => GroupScreen(
+                      userId: userId,
+                    )));
+            // Navigator.of(context).pop().;
           });
         } else {}
       });
@@ -218,7 +217,7 @@ class _GroupScreen extends State {
                     userId: userId,
                     groupUserId: groupUserId,
                   ),
-                  Navigator.of(context).pop(),
+                  // Navigator.of(context).pop(),
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (BuildContext context) => ManageUserTab(
                             groupUserId: groupUserId,
@@ -368,7 +367,7 @@ class _GroupScreen extends State {
             ),
           ),
           // subtitle: Text("${_notesForDisplay[index].groupDesc}"),
-          trailing: Icon(Icons.arrow_drop_down),
+
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext) => HomeScreen(

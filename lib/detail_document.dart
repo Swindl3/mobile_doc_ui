@@ -129,7 +129,7 @@ class _DetailDocumentScreen extends State {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: Text("หน้ารายละเอียดเอกสาร"),
+          title: Text("รายละเอียดเอกสาร"),
         ),
         body: SingleChildScrollView(
             child: Container(

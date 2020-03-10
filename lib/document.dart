@@ -10,7 +10,7 @@ import 'config.dart';
 import 'add_document.dart';
 import 'detail_document.dart';
 import 'edit_document.dart';
-import 'home.dart';
+import 'doc_category.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -22,17 +22,17 @@ void main() {
 class DocumentScreen extends StatefulWidget {
   final String groupId;
   final String groupUserId;
-  DocumentScreen({Key key, this.groupId,this.groupUserId}) : super(key: key);
+  DocumentScreen({Key key, this.groupId, this.groupUserId}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _DocumentScreen(this.groupId,this.groupUserId);
+    return _DocumentScreen(this.groupId, this.groupUserId);
   }
 }
 
 class _DocumentScreen extends State {
   String groupId;
   String groupUserId;
-  _DocumentScreen(this.groupId,this.groupUserId);
+  _DocumentScreen(this.groupId, this.groupUserId);
 
   String filteredUser(String s) => s[0].toUpperCase() + s.substring(1);
 
@@ -123,10 +123,12 @@ class _DocumentScreen extends State {
           content: new Text("แน่ใจที่จะลบ"),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            new FlatButton(child: new Text("ยกเลิก"),
-            onPressed: () {
+            new FlatButton(
+              child: new Text("ยกเลิก"),
+              onPressed: () {
                 Navigator.of(context).pop();
-            }   ,),
+              },
+            ),
             new FlatButton(
               child: new Text("ตกลง"),
               onPressed: () => confirmDelDoc(id),
@@ -153,8 +155,8 @@ class _DocumentScreen extends State {
         setState(() {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) => DocumentScreen(
-                groupId: groupId,
-              )));
+                    groupId: groupId,
+                  )));
         });
       } else {}
     });
@@ -164,7 +166,7 @@ class _DocumentScreen extends State {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("หน้าเอกสาร"),
+        title: Text("เอกสาร"),
       ),
       body: ListView.builder(
         itemBuilder: (context, index) {
@@ -176,7 +178,7 @@ class _DocumentScreen extends State {
         onPressed: () => {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext) => AddDocumentScreen(
-                groupUserId:groupUserId,
+                    groupUserId: groupUserId,
                     groupId: "${this.groupId}",
                   )))
         },
@@ -221,7 +223,6 @@ class _DocumentScreen extends State {
             ),
           ),
           subtitle: Text("${_notesForDisplay[index].docDesc}"),
-          trailing: Icon(Icons.arrow_drop_down),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext) => DetailDocumentScreen(

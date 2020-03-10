@@ -51,26 +51,60 @@ class _RegisterScreen extends State {
       params['user_lname'] = _lastName.text;
       params['user_email'] = _email.text;
       print(params);
-      http.post('${Config.api_url}/api/adduser', body: params).then((response) {
+      http.post('${Config.api_url}/api/checkduplicate',
+          body: {"user_username": _userName.text}).then((response) {
         print(response.body);
         Map resMap = jsonDecode(response.body) as Map;
-        bool status = resMap['success'];
-        if (status == false) {
-          setState(() {
-            _isError = true;
-            _msg = resMap['message'];
-            print(_msg);
-          });
+        List checkDup = resMap['body'];
+        if (checkDup.length != 0) {
+          // print(resMap['body']);
+          dialogDuplicateUser();
         } else {
-          _showDialogSuccess();
-          print("DDDDDDDDDDDDDDDDDDDDDDD");
+          http
+              .post('${Config.api_url}/api/adduser', body: params)
+              .then((response) {
+            print(response.body);
+            Map resMap = jsonDecode(response.body) as Map;
+            bool status = resMap['success'];
+            if (status == false) {
+              setState(() {
+                _isError = true;
+                _msg = resMap['message'];
+                print(_msg);
+              });
+            } else {
+              _showDialogSuccess();
+              print("DDDDDDDDDDDDDDDDDDDDDDD");
+            }
+          });
         }
       });
     }
 
     setState(() {});
   }
-
+    void dialogDuplicateUser() {
+    // flutter defined function
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: new Text("ลงทะเบียนล้มเหลว"),
+          content: new Text("Username นี้มีผู้ใช้แล้ว"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text("ตกลง"),
+              onPressed: () {
+                    Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   void _showDialogSuccess() {
     // flutter defined function
     showDialog(

@@ -140,6 +140,33 @@ class _UserGroupScreen extends State {
     );
   }
 
+  void deleteUserFromGroup(String id, String groupUserId) {
+    print("deleteUserFromGroup :  userId : $id  groupUserId : $groupUserId");
+    Map<String, dynamic> param = Map();
+    param['user_id'] = id;
+    param['groupuser_id'] = groupUserId;
+    http.post("${Config.api_url}/api/deluser", body: param).then((response) {
+      print(response.body);
+      Map resMap = jsonDecode(response.body) as Map;
+      String status = resMap['status'];
+      if (status == "success") {
+        _notesForDisplay.clear();
+        fetchNotes().then((value) {
+          setState(() {
+            _notes.addAll(value);
+            _notesForDisplay = _notes;
+          });
+        });
+        // Navigator.of(context).push(MaterialPageRoute(
+        //     builder: (BuildContext context) => GroupScreen(
+        //           userId: userId,
+        //         )));
+        // Navigator.of(context).pop().;
+
+      } else {}
+    });
+  }
+
   @override
   void initState() {
     userGroup.clear();
@@ -210,10 +237,11 @@ class _UserGroupScreen extends State {
           subtitle: Text("${_notesForDisplay[index].firstName}" +
               "  " +
               "${_notesForDisplay[index].lastName}"),
-          trailing: IconButton(
+          trailing: id == userId ? null : IconButton(
               icon: Icon(Icons.delete_forever),
               onPressed: () {
                 print("DELETE");
+                deleteUserFromGroup(id, groupUserId);
               }),
           onLongPress: () {
             // _askedToLead(id, groupName, groupDesc);

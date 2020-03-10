@@ -6,7 +6,7 @@ import 'package:photo_view/photo_view.dart';
 import 'config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'home.dart';
+import 'doc_category.dart';
 import 'globalfunc.dart';
 void main() {
   runApp(MaterialApp(

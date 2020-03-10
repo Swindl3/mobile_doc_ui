@@ -46,12 +46,13 @@ class _AddDocumentScreen extends State {
       txtImage = decode;
       // print(txtImage);
       Map<String, dynamic> param = Map();
-      param['group_id'] = "${this.groupId}";
+      param['group_id'] = groupId;
       param['doc_name'] = _name.text;
       param['doc_description'] = _detail.text;
       param['doc_objective'] = _objt.text;
-      param['doc_picture'] = txtImage;
       param['groupuser_id'] = groupUserId;
+      param['doc_picture'] = txtImage;
+      
       print(param);
       if (_name.text == "" || _detail.text == "" || txtImage == "") {
         _validate = true;
@@ -92,7 +93,8 @@ class _AddDocumentScreen extends State {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext) => DocumentScreen(
-                          groupId: "${this.groupId}",
+                      groupUserId: groupUserId,
+                          groupId: groupId,
                         )));
               },
             ),

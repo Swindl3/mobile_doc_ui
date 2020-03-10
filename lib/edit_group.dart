@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_doc/home.dart';
+import 'package:mobile_doc/doc_category.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 import 'dart:convert';
-import 'home.dart';
+import 'doc_category.dart';
 void main() {
   runApp(MaterialApp(
     home: EditGroupScreen(),
@@ -64,7 +64,7 @@ class _EditGroupScreen extends State {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("หน้าแก้ไขเอกสาร"),
+          title: Text("แก้ไขชื่อประเภทเอกสาร"),
         ),
         body: ListView(children: <Widget>[
           Container(

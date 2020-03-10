@@ -147,71 +147,119 @@ class _HomeScreen extends State {
     ]);
     super.initState();
   }
-
+  bool _validate = false;
+  var groupNameEdit = TextEditingController();
+  var groupDescEdit = TextEditingController();
   Future getEditGroup(
       String groupName, String groupDesc, String groupId) async {
-    await Navigator.of(context).pop();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditGroupScreen(
-              groupName: groupName,
-              groupDesc: groupDesc,
-              groupId: groupId,
-            )));
+        groupNameEdit.text = groupName;
+        groupDescEdit.text = groupDesc;
+            showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+                content: Form(
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text("แก้ไขชื่อกลุ่ม",
+                        style: TextStyle(fontSize: 16.0)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        hintText: "ชื่อกลุ่ม",
+                        contentPadding: EdgeInsets.all(10.0),
+                        icon: Icon(Icons.people),
+                        errorText: _validate ? "${Config.err_empty_str}" : null,
+                      ),
+                      controller: groupNameEdit,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        hintText: "ชื่อกลุ่ม",
+                        contentPadding: EdgeInsets.all(10.0),
+                        icon: Icon(Icons.people),
+                        errorText: _validate ? "${Config.err_empty_str}" : null,
+                      ),
+                      controller: groupDescEdit,
+                    ),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: RaisedButton(
+                              child: Text("ยืนยัน"),
+                              color: Colors.green,
+                              textColor: Colors.white,
+                              onPressed: () {
+                                setState(() {
+                                  groupNameEdit.text.trim() == "" || groupDescEdit.text.trim() == ""
+                                      ? _validate = true
+                                      : editGroup(groupNameEdit.text, groupDescEdit.text,groupId);
+                                  
+                                });
+                              })),
+                      Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: RaisedButton(
+                              child: Text("ยกเลิก"),
+                              color: Colors.red,
+                              textColor: Colors.white,
+                              onPressed: () {
+                                groupNameEdit.clear();
+                                groupDescEdit.clear();
+                                Navigator.of(context).pop();
+                              }))
+                    ],
+                  )
+                ])));
+          });
+        });
 
-    setState(() {});
+    // await Navigator.of(context).pop();
+    // Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (BuildContext context) => EditGroupScreen(
+    //           groupName: groupName,
+    //           groupDesc: groupDesc,
+    //           groupId: groupId,
+    //         )));
+
+    // setState(() {});
   }
+    void editGroup(String groupName ,String groupDesc , String groupId) {
 
-  Future getDeleteGruop() async {
-    await Navigator.of(context).pop();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) => EditGroupScreen()));
-
-    setState(() {});
+    Map<String, String> params = Map();
+    params['group_id'] = groupId;
+    params['group_description'] = groupDesc;
+    params['group_name'] = groupName;
+    print(params);
+    http.post('${Config.api_url}/api/editgroup', body: params).then((response) {
+      print(response.body);
+      Map resMap = jsonDecode(response.body) as Map;
+      bool status = resMap['success'];
+      if (status == true) {
+        setState(() {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext context) => HomeScreen(groupUserId: groupUserId,userId: userId,)));
+        });
+      } else {}
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("หน้าหลัก"),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text("Ashish Rawat"),
-              accountEmail: Text("ashishrawat2911@gmail.com"),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor:
-                    Theme.of(context).platform == TargetPlatform.android
-                        ? Colors.blue
-                        : Colors.white,
-                child: Text(
-                  "ABC",
-                  style: TextStyle(fontSize: 40.0),
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text("ข้อมูลผู้ใช้งาน"),
-              leading: Icon(Icons.account_circle),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => DetailUserScreen()));
-              },
-            ),
-            ListTile(
-              title: Text("เพิ่มกลุ่ม"),
-              leading: Icon(Icons.add),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => AddGroupScreen()));
-              },
-            ),
-          ],
-        ),
+        title: Text("ประเภทเอกสาร"),
       ),
       body: ListView.builder(
         itemBuilder: (context, index) {
@@ -271,7 +319,6 @@ class _HomeScreen extends State {
             ),
           ),
           subtitle: Text("${_notesForDisplay[index].groupDesc}"),
-          trailing: Icon(Icons.arrow_drop_down),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext) => DocumentScreen(

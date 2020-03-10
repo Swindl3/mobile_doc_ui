@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_doc/home.dart';
+import 'package:mobile_doc/doc_category.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -56,6 +56,7 @@ class _AddGroupScreen extends State {
   }
 
   void _showDialogSuccess() {
+    Navigator.of(context).pop();
     // flutter defined function
     showDialog(
       context: context,
@@ -69,6 +70,7 @@ class _AddGroupScreen extends State {
             new FlatButton(
               child: new Text("ตกลง"),
               onPressed: () {
+                    Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => HomeScreen(groupUserId: groupUserId,)));
               },
@@ -83,7 +85,7 @@ class _AddGroupScreen extends State {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("หน้าเพิ่มกลุ่ม"),
+        title: Text("เพิ่มประเภทเอกสาร"),
       ),
       body: ListView(
         children: <Widget>[
@@ -91,7 +93,7 @@ class _AddGroupScreen extends State {
             margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
             child: TextField(
               decoration: InputDecoration(
-                  hintText: "ชื่อกลุ่ม", contentPadding: EdgeInsets.all(10.0),
+                  hintText: "ชื่อประเภทเอกสาร", contentPadding: EdgeInsets.all(10.0),
                   errorText:_validate ? "${Config.err_empty_str}" : null),
               controller: _name,
             ),
@@ -100,7 +102,7 @@ class _AddGroupScreen extends State {
             margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
             child: TextField(
               decoration: InputDecoration(
-                  hintText: "รายละเอียดกลุ่ม",
+                  hintText: "รายละเอียดประเภทเกสาร",
                   contentPadding: EdgeInsets.all(10.0),
                   errorText: _validate ? "${Config.err_empty_str}" : null),
               controller: _detail,
