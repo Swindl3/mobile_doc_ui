@@ -8,6 +8,7 @@ import 'package:mobile_doc/doc_category.dart';
 import 'package:mobile_doc/manage_user.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'change_password.dart';
 import 'config.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_doc/group_user.dart';
@@ -21,18 +22,29 @@ void main() {
 
 class GroupScreen extends StatefulWidget {
   final String userId;
-  GroupScreen({Key key, this.userId}) : super(key: key);
+  final String fname;
+  final String lname;
+  final String password;
+  final String username;
+  final String email;
+  GroupScreen({Key key, this.userId,this.fname,this.email,this.lname,this.password,this.username}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _GroupScreen(this.userId);
+    return _GroupScreen(this.userId,this.fname,this.email,this.lname,this.password,this.username);
   }
 }
 
 class _GroupScreen extends State {
   String userId;
-
   String groupUserId;
-  _GroupScreen(this.userId);
+
+
+   String fname;
+   String lname;
+   String password;
+   String username;
+   String email;
+  _GroupScreen(this.userId,this.fname,this.email,this.lname,this.password,this.username);
   String filteredUser(String s) => s[0].toUpperCase() + s.substring(1);
   var notes = List<Note>();
   List<Note> _notes = List<Note>();
@@ -272,8 +284,8 @@ class _GroupScreen extends State {
         child: ListView(
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text("Ashish Rawat"),
-              accountEmail: Text("ashishrawat2911@gmail.com"),
+              accountName: Text("$fname  $lname"),
+              accountEmail: Text("$email"),
               currentAccountPicture: CircleAvatar(
                 backgroundColor:
                     Theme.of(context).platform == TargetPlatform.android
@@ -286,21 +298,21 @@ class _GroupScreen extends State {
               ),
             ),
             ListTile(
-              title: Text("ข้อมูลผู้ใช้งาน"),
-              leading: Icon(Icons.account_circle),
+              title: Text("แก้ไขข้อมูลผู้ใช้งาน"),
+              leading: Icon(Icons.settings),
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => DetailUserScreen()));
               },
             ),
-            ListTile(
-              title: Text("เพิ่มกลุ่ม"),
-              leading: Icon(Icons.add),
+             ListTile(
+              title: Text("เปลี่ยนรหัสผ่าน"),
+              leading: Icon(Icons.settings),
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => AddGroupScreen()));
+                    builder: (BuildContext context) => ChangePasswordScreen()));
               },
             ),
           ],

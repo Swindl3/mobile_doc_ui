@@ -48,6 +48,8 @@ class _AddGroupScreen extends State {
         String status = resMap['status'];
         if (status == "success") {
           setState(() {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
             _showDialogSuccess();
           });
         } else {}
@@ -56,7 +58,7 @@ class _AddGroupScreen extends State {
   }
 
   void _showDialogSuccess() {
-    Navigator.of(context).pop();
+    // Navigator.of(context).pop();
     // flutter defined function
     showDialog(
       context: context,
@@ -70,9 +72,9 @@ class _AddGroupScreen extends State {
             new FlatButton(
               child: new Text("ตกลง"),
               onPressed: () {
-                    Navigator.of(context).pop();
+                     Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => HomeScreen(groupUserId: groupUserId,)));
+                    builder: (BuildContext context) => HomeScreen(groupUserId: groupUserId,userId: userId,)));
               },
             ),
           ],

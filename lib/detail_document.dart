@@ -11,6 +11,10 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/foundation.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() {
   runApp(MaterialApp(
@@ -45,6 +49,11 @@ class DetailDocumentScreen extends StatefulWidget {
 }
 
 class _DetailDocumentScreen extends State {
+  String message;
+  String channelId = "1000";
+  String channelName = "FLUTTER_NOTIFICATION_CHANNEL";
+  String channelDescription = "FLUTTER_NOTIFICATION_CHANNEL_DETAIL";
+
   String imgPath;
   String docName;
   String docDesc;
@@ -55,14 +64,78 @@ class _DetailDocumentScreen extends State {
   _DetailDocumentScreen(this.imgPath, this.docName, this.docDesc,
       this.docCreate, this.docUpdate, this.docObjt, this.docId);
 
+  // final snackBar = SnackBar(content: Text());
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  @override
+  initState() {
+    message = "No message.";
+
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('ic_launcher');
+
+    var initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: (id, title, body, payload) {
+      print("onDidReceiveLocalNotification called.");
+    });
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (payload) {
+      // when user tap on notification.
+      print("onSelectNotification called.");
+      setState(() {
+        message = payload;
+      });
+    });
+    super.initState();
+  }
+
+  sendNotification() async {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails('10000',
+        'FLUTTER_NOTIFICATION_CHANNEL', 'FLUTTER_NOTIFICATION_CHANNEL_DETAIL',
+        importance: Importance.Max, priority: Priority.High);
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(111, 'Hello, benznest.',
+        'This is a your notifications. ', platformChannelSpecifics,
+        payload: 'I just haven\'t Met You Yet');
+  }
+
+  _showToast() {
+    final snackBar = new SnackBar(
+      content: const Text('ดาวน์โหลดสำเร็จ'),
+    );
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
+
   downloadImg() async {
     print(imgPath);
     var response = await Dio().get("${Config.img_url}/" + imgPath,
         options: Options(responseType: ResponseType.bytes));
     print(response);
     final result =
-        await ImageGallerySaver.saveImage(Uint8List.fromList(response.data));
-    print(result);
+        await ImageGallerySaver.saveImage(Uint8List.fromList(response.data))
+            .then((onValue) {
+      print(onValue);
+      _showToast();
+      sendNotification();
+    });
+    // if (result) {
+    // Scaffold.of(context).showSnackBar(snackBar);
+    // }
+    //  else {
+    //   final snackBar = SnackBar(
+    //       content: Text(
+    //     'ดาวน์โหลดสำเร็จ',
+    //     style: TextStyle(color: Colors.red[300]),
+    //   ));
+    //   Scaffold.of(context).showSnackBar(snackBar);
+    // }
   }
 
   void _onImageFile() async {
@@ -127,6 +200,7 @@ class _DetailDocumentScreen extends State {
 
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text("รายละเอียดเอกสาร"),

@@ -282,44 +282,6 @@ class _CreateGroupScreen extends State {
           // print(userGroup.toSet().toList())
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: Text("Ashish Rawat"),
-              accountEmail: Text("ashishrawat2911@gmail.com"),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor:
-                    Theme.of(context).platform == TargetPlatform.android
-                        ? Colors.blue
-                        : Colors.white,
-                child: Text(
-                  "ABC",
-                  style: TextStyle(fontSize: 40.0),
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text("ข้อมูลผู้ใช้งาน"),
-              leading: Icon(Icons.account_circle),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => DetailUserScreen()));
-              },
-            ),
-            ListTile(
-              title: Text("เพิ่มกลุ่ม"),
-              leading: Icon(Icons.add),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => AddGroupScreen()));
-              },
-            ),
-          ],
-        ),
-      ),
       body: ListView.builder(
         itemBuilder: (context, index) {
           return index == 0 ? _searchBar() : _listItem(index - 1);

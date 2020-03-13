@@ -215,14 +215,14 @@ class _DocumentScreen extends State {
     return new Column(
       children: <Widget>[
         ListTile(
-          leading: Image.asset("images/document.png"),
+          leading: Image.network("${Config.img_url}/" + "${_notesForDisplay[index].docPicture}"),
           title: Text(
             "${_notesForDisplay[index].docName}",
             style: new TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
-          subtitle: Text("${_notesForDisplay[index].docDesc}"),
+          subtitle: Text("${_notesForDisplay[index].docUpdate}"),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext) => DetailDocumentScreen(

@@ -18,17 +18,18 @@ void main() {
 class AddDocumentScreen extends StatefulWidget {
   final String groupId;
   final String groupUserId;
-  AddDocumentScreen({Key key, this.groupId,this.groupUserId}) : super(key: key);
+  AddDocumentScreen({Key key, this.groupId, this.groupUserId})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() {
-    return _AddDocumentScreen(this.groupId,this.groupUserId);
+    return _AddDocumentScreen(this.groupId, this.groupUserId);
   }
 }
 
 class _AddDocumentScreen extends State {
   String groupId;
   String groupUserId;
-  _AddDocumentScreen(this.groupId,this.groupUserId);
+  _AddDocumentScreen(this.groupId, this.groupUserId);
 
   TextEditingController _name = TextEditingController();
   TextEditingController _detail = TextEditingController();
@@ -52,7 +53,7 @@ class _AddDocumentScreen extends State {
       param['doc_objective'] = _objt.text;
       param['groupuser_id'] = groupUserId;
       param['doc_picture'] = txtImage;
-      
+
       print(param);
       if (_name.text == "" || _detail.text == "" || txtImage == "") {
         _validate = true;
@@ -67,6 +68,8 @@ class _AddDocumentScreen extends State {
           String status = resMap['status'];
           if (status == "success") {
             setState(() {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
               _showDialogSuccess();
             });
           } else {}
@@ -93,7 +96,7 @@ class _AddDocumentScreen extends State {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext) => DocumentScreen(
-                      groupUserId: groupUserId,
+                          groupUserId: groupUserId,
                           groupId: groupId,
                         )));
               },

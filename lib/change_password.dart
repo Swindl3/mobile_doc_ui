@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(MaterialApp(
-    home: DetailUserScreen(),
+    home: ChangePasswordScreen(),
     debugShowCheckedModeBanner: false,
   ));
 }
 
-class DetailUserScreen extends StatefulWidget {
+class ChangePasswordScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return _DetailUserScreen();
+    return _ChangePasswordScreen();
   }
 }
 
-class _DetailUserScreen extends State {
+class _ChangePasswordScreen extends State {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("ข้อมูลผู้ใช้งาน"),
+          title: Text("เปลี่ยนรหัสผ่าน"),
         ),
         body: ListView(
           children: <Widget>[
@@ -27,24 +27,23 @@ class _DetailUserScreen extends State {
                 margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
                 child: TextField(
                     decoration: InputDecoration(
-                  hintText: "FirstName",
+                  hintText: "OldPassword",
                   contentPadding: EdgeInsets.all(10.0),
                 ))),
             Container(
                 margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
                 child: TextField(
                     decoration: InputDecoration(
-                  hintText: "LastName",
+                  hintText: "NewPassword",
                   contentPadding: EdgeInsets.all(10.0),
-                ))),
-            Container(
+                ))),Container(
                 margin: EdgeInsets.only(left: 30.0, right: 30.0, top: 10.0),
                 child: TextField(
                     decoration: InputDecoration(
-                  hintText: "Email",
+                  hintText: "ConfrimPassword",
                   contentPadding: EdgeInsets.all(10.0),
                 ))),
-            Container(
+                 Container(
                 margin: EdgeInsets.only(left: 60.0, right: 60.0, top: 30.0),
                 child: RaisedButton(
                   onPressed: () => {},

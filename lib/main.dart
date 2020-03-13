@@ -27,6 +27,11 @@ class _DocApp extends State {
   bool _validate = false;
   // int get userId => null;
   String userId;
+  String fname;
+  String lname;
+  String password;
+  String username;
+  String email;
   void onLogin() {
     print("onLogin");
     Map<String, String> params = Map();
@@ -43,11 +48,23 @@ class _DocApp extends State {
         if (status == true) {
           for (var items in resMap['body']) {
             userId = items['user_id'].toString();
+            fname = items["user_fname"];
+            lname = items["user_lname"];
+            email = items["user_email"];
+            password = items["user_password"];
+            username = items["user_username"];
           }
           print("Login Succeeded");
           print(resMap['body']);
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext) => GroupScreen(userId: userId)));
+              builder: (BuildContext) => GroupScreen(
+                    userId: userId,
+                    fname: fname,
+                    lname: lname,
+                    email: email,
+                    password: password,
+                    username: username,
+                  )));
         } else {
           print("Login Failed");
         }
